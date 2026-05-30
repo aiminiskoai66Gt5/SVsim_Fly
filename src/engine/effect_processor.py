@@ -17,7 +17,7 @@ def to_target_type(val):
     except KeyError:
         raise ValueError(f"Unknown target type '{val}'")
 from src.models.deck import Deck
-from src.common.enums import CardType, EventType, Zone, TargetType, ProcessType, EffectType, TribeType
+from src.common.enums import CardType, EventType, Zone, TargetType, ProcessType, EffectType, TribeType, ClassType
 from src.models.card import Card
 from src.engine.game_state_manager import GameStateManager
 from src.models.player import Player

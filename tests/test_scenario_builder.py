@@ -959,6 +959,26 @@ class TestScenarioBuilderCore(unittest.TestCase):
         p1_graveyard_ids = [c.card_id for c in game.game_state_manager.get_cards_in_zone("player1", Zone.GRAVEYARD)]
         self.assertIn(summoned_card.card_id, p1_graveyard_ids)
 
+    def test_fuzzing_name_error_class_type(self):
+        """ClassType이 effect_processor.py에 정의되지 않아 발생하는 NameError를 재현하고 검증한다."""
+        builder = GameScenarioBuilder("player1", "player2")
+        builder.set_pp("player1", 2, 2)
+
+        # 'Little Beastie' (ID 10731120) 카드를 패에 추가한다.
+        card = builder.add_to_hand("player1", "10731120")
+
+        game = builder.build()
+
+        # Little Beastie 카드를 플레이한다.
+        played = game.play_card("player1", card.card_id)
+        self.assertTrue(played)
+
+        # 필드에 비술 마법진(Earth Sigil)이 정상적으로 소환되었는지 확인한다.
+        field_cards = game.game_state_manager.get_cards_in_zone("player1", Zone.FIELD)
+        sigils = [c for c in field_cards if c.card_data.name == "Earth Sigil"]
+        self.assertEqual(len(sigils), 1)
+
+
 
 
 
