@@ -126,7 +126,39 @@ def _load_process_from_dict(p_dict: Dict[str, Any]) -> Process:
             print(f"[WARNING] EffectType '{attrs['value']}' not found for {attrs['process'].name} process.")
 
     if "value" in attrs and isinstance(attrs["value"], dict):
-        attrs["value"] = _load_effect_from_dict(attrs["value"])
+        if "condition" in attrs["value"]:
+            # 조건부 분기 구조(condition, if_true, if_false)인 경우의 로딩 처리를 수행한다.
+            val_dict = attrs["value"].copy()
+
+            # condition 문자열 식별자를 실제 런타임 함수로 매핑한다.
+            if val_dict.get("condition") == "COMPARE_3_HIGHEST_COSTS":
+                def compare_3_highest_costs(game_state_manager: Any) -> bool:
+                    current_player_id = game_state_manager.current_turn_player_id
+                    opponent_player_id = "player2" if current_player_id == "player1" else "player1"
+
+                    # 내 패와 상대 패의 상위 3장 기본 코스트 합을 구하여 비교한다.
+                    def get_highest_3_sum(player_id: str) -> int:
+                        player = game_state_manager.players[player_id]
+                        costs = [card.card_data.cost for card in player.hand.get_cards()]
+                        costs.sort(reverse=True)
+                        return sum(costs[:3])
+
+                    p1_sum = get_highest_3_sum(current_player_id)
+                    p2_sum = get_highest_3_sum(opponent_player_id)
+                    return p1_sum > p2_sum
+
+                val_dict["condition"] = compare_3_highest_costs
+
+            # if_true 및 if_false 효과를 Effect 객체로 변환하여 로드한다.
+            if "if_true" in val_dict:
+                val_dict["if_true"] = _load_effect_from_dict(val_dict["if_true"])
+            if "if_false" in val_dict:
+                val_dict["if_false"] = _load_effect_from_dict(val_dict["if_false"])
+
+            attrs["value"] = val_dict
+        else:
+            # 일반적인 딕셔너리 형태의 효과는 기존 방식대로 로드한다.
+            attrs["value"] = _load_effect_from_dict(attrs["value"])
     elif "value" in attrs and isinstance(attrs["value"], list):
         attrs["value"] = [
             _load_effect_from_dict(item) if isinstance(item, dict) else item

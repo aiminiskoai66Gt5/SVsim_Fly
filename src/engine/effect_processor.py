@@ -1509,7 +1509,7 @@ class EffectProcessor:
 
     def _process_conditional_effect(self, effect_data: Effect, target: Any, game_state_manager: 'GameStateManager'):
         """처리 - 조건부 효과"""
-        val = effect_data.value
+        val = effect_data.get('value')
         if not isinstance(val, dict) or "condition" not in val:
             return
 
@@ -1522,15 +1522,28 @@ class EffectProcessor:
 
         caster_id = getattr(effect_data, "caster_id", None)
 
+        # 후속 효과에 명시적인 타겟이 있는지 검사하는 헬퍼 함수다.
+        def has_explicit_target(eff: Any) -> bool:
+            if not eff:
+                return False
+            if getattr(eff, "target", None) is not None:
+                return True
+            if hasattr(eff, "processes"):
+                for p in eff.processes:
+                    if getattr(p, "target", None) is not None:
+                        return True
+            return False
+
         if condition_met:
             if_true_effect = val.get("if_true")
             if if_true_effect:
-                # caster_id를 유지하여 resolve_effect를 재귀 호출합니다.
-                self.resolve_effect(if_true_effect, caster_id, game_state_manager, getattr(target, "card_id", None) or getattr(target, "player_id", None))
+                tid = None if has_explicit_target(if_true_effect) else (getattr(target, "card_id", None) or getattr(target, "player_id", None))
+                self.resolve_effect(if_true_effect, caster_id, game_state_manager, tid)
         else:
             if_false_effect = val.get("if_false")
             if if_false_effect:
-                self.resolve_effect(if_false_effect, caster_id, game_state_manager, getattr(target, "card_id", None) or getattr(target, "player_id", None))
+                tid = None if has_explicit_target(if_false_effect) else (getattr(target, "card_id", None) or getattr(target, "player_id", None))
+                self.resolve_effect(if_false_effect, caster_id, game_state_manager, tid)
 
     def _process_spellboost_hand(self, effect_data: Effect, target: Any, game_state_manager: 'GameStateManager'):
         """처리 - 손패 주문 증폭"""

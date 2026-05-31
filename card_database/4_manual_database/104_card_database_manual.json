@@ -93,9 +93,7 @@
             {
                 "type": "MODE",
                 "processes": [
-                    {
-                        "process": "CHOOSE"
-                    }
+                    {}
                 ],
                 "choices": [],
                 "process": "CHOOSE"
@@ -569,8 +567,8 @@
         ],
         "raw_effects_text": "<b><color=Keyword>Fanfare</color></b>: Select an Artifact follower in your hand and deal X damage to all enemy followers. X is the selected follower's attack.\n<hr><b><color=Keyword>Last Words</color></b>: Add a <b><i><color=Keyword>Fortifier Artifact</color></i></b> to your hand.",
         "required_listeners": [
-            "CARD_PLAYED",
-            "DESTROYED_ON_FIELD"
+            "DESTROYED_ON_FIELD",
+            "CARD_PLAYED"
         ]
     },
     "10473310": {
@@ -801,8 +799,8 @@
         "raw_effects_text": "<b><color=Keyword>Fanfare</color></b>: <b><color=Keyword>Skybound Art</color></b> - Evolve this follower. <b><color=Keyword>Super Skybound Art</color></b> - Deal 3 damage to the enemy leader.\n<hr><ev>When this follower evolves, do this 7 times: \"Deal 1 damage to a random enemy follower.\"</ev>",
         "required_listeners": [
             "FOLLOWER_SUPER_EVOLVED",
-            "CARD_PLAYED",
-            "FOLLOWER_EVOLVED"
+            "FOLLOWER_EVOLVED",
+            "CARD_PLAYED"
         ]
     },
     "10463210": {
@@ -828,9 +826,7 @@
             {
                 "type": "MODE",
                 "processes": [
-                    {
-                        "process": "CHOOSE"
-                    }
+                    {}
                 ],
                 "choices": [],
                 "process": "CHOOSE"
@@ -1088,8 +1084,8 @@
         ],
         "raw_effects_text": "<b><color=Keyword>Fanfare</color></b>: <b><color=Keyword>Necromancy</color> (6)</b> - <b><color=Keyword>Reanimate</color> (2)</b>, <b><color=Keyword>Reanimate</color> (1)</b>, and evolve them.\n<hr>At the end of your turn, give all enemy followers on the field -2/-2.",
         "required_listeners": [
-            "CARD_PLAYED",
-            "TURN_END"
+            "TURN_END",
+            "CARD_PLAYED"
         ]
     },
     "10422130": {
@@ -1381,8 +1377,8 @@
         "raw_effects_text": "<b><color=Keyword>Fanfare</color></b>: If you have 10 max play points, evolve this follower.\n<hr><ev>When this follower evolves, deal 3 damage to all enemy followers.</ev>",
         "required_listeners": [
             "FOLLOWER_SUPER_EVOLVED",
-            "CARD_PLAYED",
-            "FOLLOWER_EVOLVED"
+            "FOLLOWER_EVOLVED",
+            "CARD_PLAYED"
         ]
     },
     "10441110": {
@@ -1463,9 +1459,7 @@
             {
                 "type": "MODE",
                 "processes": [
-                    {
-                        "process": "CHOOSE"
-                    }
+                    {}
                 ],
                 "choices": [],
                 "process": "CHOOSE"
@@ -1567,8 +1561,8 @@
         ],
         "raw_effects_text": "Can attack 2 times per turn.\n<b><color=Keyword>Strike</color></b>: Restore 3 defense to all allies.",
         "required_listeners": [
-            "CARD_PLAYED",
-            "ATTACK_DECLARED"
+            "ATTACK_DECLARED",
+            "CARD_PLAYED"
         ]
     },
     "10461120": {
@@ -1608,9 +1602,9 @@
         ],
         "raw_effects_text": "At the end of your turn, if this follower is evolved, deal 2 damage to all followers.\n<hr><ev><b><color=Keyword>Evolve</color></b>: Give this follower \"Can't attack followers or leaders\" until the end of the turn.</ev>",
         "required_listeners": [
+            "TURN_END",
             "FOLLOWER_SUPER_EVOLVED",
-            "FOLLOWER_EVOLVED",
-            "TURN_END"
+            "FOLLOWER_EVOLVED"
         ]
     },
     "10474110": {
@@ -1722,9 +1716,9 @@
         ],
         "raw_effects_text": "At the end of your turn, evolve this follower.\n<hr><ev>When this follower evolves, deal 1 damage to all enemy followers.</ev>",
         "required_listeners": [
+            "TURN_END",
             "FOLLOWER_SUPER_EVOLVED",
-            "FOLLOWER_EVOLVED",
-            "TURN_END"
+            "FOLLOWER_EVOLVED"
         ]
     },
     "10441120": {
@@ -1771,8 +1765,8 @@
         ],
         "raw_effects_text": "Activates in hand. Whenever a 3-base-cost allied follower super-evolves, set the cost of this card to 0 until the end of the turn.\n<hr>At the end of your turn, give a random super-evolved allied follower on the field +1/+1.",
         "required_listeners": [
-            "CARD_PLAYED",
-            "TURN_END"
+            "TURN_END",
+            "CARD_PLAYED"
         ]
     },
     "10442310": {
@@ -2002,8 +1996,8 @@
         ],
         "raw_effects_text": "<b><color=Keyword>Fanfare</color></b>: Evolve all unevolved allied followers on the field. Deal 2 damage to your leader.\n<hr><b><color=Keyword>Drain</color></b>",
         "required_listeners": [
-            "CARD_PLAYED",
-            "DAMAGE_DEALT_BY_COMBAT"
+            "DAMAGE_DEALT_BY_COMBAT",
+            "CARD_PLAYED"
         ]
     },
     "10452110": {
@@ -2221,8 +2215,8 @@
         ],
         "raw_effects_text": "Activates in deck. At the start of your turn, if allied followers have evolved at least 6 times this match, <b><color=Keyword>Invoke</color></b> this card.\n<hr>When this card is <b><color=Keyword>Invoke</color><color=Keyword>d</color></b>, gain <b><i>Crest: Sandalphon, Primarch Successor</i></b> and return this card to hand.\n<b><color=Keyword>Fanfare</color></b>: <b><color=Keyword>Super Skybound Art</color></b> - Do this 5 times: \"Deal 2 damage to a random enemy.\"",
         "required_listeners": [
-            "CARD_PLAYED",
-            "TURN_START"
+            "TURN_START",
+            "CARD_PLAYED"
         ]
     },
     "10462110": {
@@ -2267,8 +2261,8 @@
         "raw_effects_text": "<b><color=Keyword>Enhance</color> (6)</b>: Give this follower +0/+10.\n<hr><b><color=Keyword>Ward</color></b>\n<hr><ev><b><color=Keyword>Evolve</color></b>: Select a damaged enemy follower on the field and destroy it.</ev>",
         "required_listeners": [
             "FOLLOWER_SUPER_EVOLVED",
-            "CARD_PLAYED",
-            "FOLLOWER_EVOLVED"
+            "FOLLOWER_EVOLVED",
+            "CARD_PLAYED"
         ]
     },
     "10452120": {
@@ -2585,10 +2579,10 @@
         ],
         "raw_effects_text": "At the end of your turn, spellboost your hand X times. X is this follower's attack.\n<hr><ev><b><color=Keyword>Evolve</color></b>: Give this follower \"Can't attack followers or leaders.\"</ev>",
         "required_listeners": [
-            "FOLLOWER_EVOLVED",
-            "CARD_PLAYED",
+            "TURN_END",
             "FOLLOWER_SUPER_EVOLVED",
-            "TURN_END"
+            "FOLLOWER_EVOLVED",
+            "CARD_PLAYED"
         ]
     },
     "10463110": {
@@ -2629,8 +2623,8 @@
         "raw_effects_text": "Whenever you <b><color=Keyword>Engage</color></b> an amulet, restore 1 defense to your leader.\n<hr><ev><b><color=Keyword>Evolve</color></b>: Select an enemy follower on the field and deal it 3 damage.</ev>",
         "required_listeners": [
             "FOLLOWER_SUPER_EVOLVED",
-            "CARD_PLAYED",
-            "FOLLOWER_EVOLVED"
+            "FOLLOWER_EVOLVED",
+            "CARD_PLAYED"
         ]
     },
     "10461110": {
@@ -2712,9 +2706,7 @@
             {
                 "type": "MODE",
                 "processes": [
-                    {
-                        "process": "CHOOSE"
-                    }
+                    {}
                 ],
                 "choices": [],
                 "process": "CHOOSE"
@@ -3050,8 +3042,8 @@
         "raw_effects_text": "<b><color=Keyword>Fanfare</color></b>: Select an enemy follower on the field and deal it 8 damage.\n<hr><b><color=Keyword>Intimidate</color></b>\n<hr><ev><b><color=Keyword>Evolve</color></b>: Replicate the effects of this card's <b><color=Keyword>Fanfare</color></b> ability.</ev>",
         "required_listeners": [
             "FOLLOWER_SUPER_EVOLVED",
-            "CARD_PLAYED",
-            "FOLLOWER_EVOLVED"
+            "FOLLOWER_EVOLVED",
+            "CARD_PLAYED"
         ]
     },
     "10414120": {

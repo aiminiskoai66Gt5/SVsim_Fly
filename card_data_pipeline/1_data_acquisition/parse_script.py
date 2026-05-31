@@ -792,6 +792,28 @@ def parse_action(text: str):
                 if card_names:
                     action['value'] = card_names[0] if len(card_names) == 1 else card_names
 
+            if action.get('process') == ProcessType.CONDITIONAL_EFFECT:
+                cond_text = groups.get('condition_text', '').strip()
+                act_text = groups.get('action_text', '').strip()
+
+                # CONDITIONAL_EFFECT의 조건부 파싱 처리를 수행한다.
+                if "sum of the 3 highest base costs" in cond_text:
+                    true_action = parse_action(act_text)
+                    if 'process' not in true_action:
+                        # 파싱 실패 시 기본 파괴 효과를 매핑한다.
+                        true_action = {'process': ProcessType.DESTROY, 'target': TargetType.ALL_OPPONENT_FOLLOWERS}
+                    else:
+                        # 내부 Enum 객체들을 JSON 직렬화에 적합하게 문자열로 변환한다.
+                        if isinstance(true_action.get('process'), Enum):
+                            true_action['process'] = true_action['process'].name
+                        if isinstance(true_action.get('target'), Enum):
+                            true_action['target'] = true_action['target'].name
+
+                    action['value'] = {
+                        'condition': 'COMPARE_3_HIGHEST_COSTS',
+                        'if_true': true_action
+                    }
+
             return action
 
     return {'raw_action_text': text_clean}

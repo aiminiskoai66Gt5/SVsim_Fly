@@ -978,6 +978,71 @@ class TestScenarioBuilderCore(unittest.TestCase):
         sigils = [c for c in field_cards if c.card_data.name == "Earth Sigil"]
         self.assertEqual(len(sigils), 1)
 
+    def test_fuzzing_attribute_error_process_value_condition_false(self):
+        """Behemoth General 카드 진화 시 패 코스트 조건이 거짓일 때 효과가 발동하지 않음을 검증한다."""
+        builder = GameScenarioBuilder("player1", "player2")
+        builder.set_active_player("player2")
+        builder.set_ep("player2", 1, 1)
+
+        # Behemoth General (ID 10502120) 카드를 필드에 추가한다.
+        card = builder.add_to_field("player2", "10502120")
+
+        # player2(진화자)의 패에 1코스트짜리 카드 3장을 추가한다.
+        builder.add_to_hand("player2", "10031210")
+        builder.add_to_hand("player2", "10031210")
+        builder.add_to_hand("player2", "10031210")
+
+        # player1(상대)의 패에 5코스트짜리 카드 3장을 추가한다.
+        builder.add_to_hand("player1", "90072110")
+        builder.add_to_hand("player1", "90072110")
+        builder.add_to_hand("player1", "90072110")
+
+        # 상대(player1) 필드에 적 추종자를 배치한다.
+        enemy_follower = builder.add_to_field("player1", "10454120")
+
+        game = builder.build()
+
+        # Behemoth General을 진화시킨다.
+        game.evolve_follower(card.card_id, "player2")
+        self.assertTrue(card.is_evolved)
+
+        # 파괴 효과가 발동하지 않아 적 추종자가 필드에 그대로 남아있어야 한다.
+        self.assertEqual(enemy_follower.current_zone, Zone.FIELD)
+
+    def test_fuzzing_attribute_error_process_value_condition_true(self):
+        """Behemoth General 카드 진화 시 패 코스트 조건이 참일 때 효과가 작동함을 검증한다."""
+        builder = GameScenarioBuilder("player1", "player2")
+        builder.set_active_player("player2")
+        builder.set_ep("player2", 1, 1)
+
+        # Behemoth General (ID 10502120) 카드를 필드에 추가한다.
+        card = builder.add_to_field("player2", "10502120")
+
+        # player2(진화자)의 패에 7코스트짜리 카드 3장을 추가한다.
+        builder.add_to_hand("player2", "10454120")
+        builder.add_to_hand("player2", "10454120")
+        builder.add_to_hand("player2", "10454120")
+
+        # player1(상대)의 패에 1코스트짜리 카드 3장을 추가한다.
+        builder.add_to_hand("player1", "10031210")
+        builder.add_to_hand("player1", "10031210")
+        builder.add_to_hand("player1", "10031210")
+
+        # 상대(player1) 필드에 적 추종자를 배치한다.
+        enemy_follower = builder.add_to_field("player1", "10454120")
+
+        game = builder.build()
+
+        # Behemoth General을 진화시킨다.
+        game.evolve_follower(card.card_id, "player2")
+        self.assertTrue(card.is_evolved)
+
+        # 파괴 효과가 발동하여 상대(player1) 필드의 적 추종자가 파괴되어야 한다.
+        self.assertEqual(enemy_follower.current_zone, Zone.GRAVEYARD)
+
+
+
+
 
 
 

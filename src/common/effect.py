@@ -38,6 +38,20 @@ def wrap_dict(val: Any) -> Any:
     return val
 
 
+def _serialize_value(val: Any) -> Any:
+    """객체를 JSON 직렬화가 가능한 원시 타입으로 재귀적 변환한다."""
+    if isinstance(val, Enum):
+        return val.name
+    elif hasattr(val, 'to_dict'):
+        return val.to_dict()
+    elif isinstance(val, list):
+        return [_serialize_value(item) for item in val]
+    elif isinstance(val, dict):
+        return {k: _serialize_value(v) for k, v in val.items()}
+    return val
+
+
+
 class Process:
     """Process 클래스입니다."""
     def __init__(self, **kwargs):
@@ -83,21 +97,8 @@ class Process:
             setattr(self, key, value)
 
     def to_dict(self) -> Dict[str, Any]:
-        """프로세스를 딕셔너리 형태로 재귀적으로 변환합니다."""
-        data = {}
-        for key, value in self.attributes.items():
-            if isinstance(value, Enum):
-                data[key] = value.name
-            elif isinstance(value, (Effect, Process)):
-                data[key] = value.to_dict()
-            elif isinstance(value, list):
-                data[key] = [
-                    item.to_dict() if isinstance(item, (Effect, Process)) else item
-                    for item in value
-                ]
-            else:
-                data[key] = value
-        return data
+        """프로세스를 딕셔너리 형태로 재귀적 변환한다."""
+        return {k: _serialize_value(v) for k, v in self.attributes.items()}
 
 
 class Effect:
@@ -197,22 +198,8 @@ class Effect:
             self._in_update = False
 
     def to_dict(self) -> Dict[str, Any]:
-        """효과를 딕셔너리 형태로 재귀적으로 변환합니다."""
-        data = {}
-        for key, value in self.attributes.items():
-            if isinstance(value, Enum):
-                data[key] = value.name
-            elif isinstance(value, (Effect, Process)):
-                data[key] = value.to_dict()  # 재귀 호출
-            elif isinstance(value, list):
-                # 리스트 내의 Effect 또는 Process 객체들도 변환합니다.
-                data[key] = [
-                    item.to_dict() if isinstance(item, (Effect, Process)) else item
-                    for item in value
-                ]
-            else:
-                data[key] = value
-        return data
+        """효과를 딕셔너리 형태로 재귀적 변환한다."""
+        return {k: _serialize_value(v) for k, v in self.attributes.items()}
 
     def get(self, key: str, default: Any = None) -> Any:
         """키를 사용하여 효과의 속성 값을 가져옵니다."""

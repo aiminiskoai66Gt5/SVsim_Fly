@@ -143,8 +143,8 @@
         ],
         "raw_effects_text": "Activates in hand. At the end of your turn, reduce the cost of this card by 1.\n<hr>Deal 6 damage to the enemy leader. If there's an allied <b><i><color=Keyword>Izudia, Annihilation Manifest</color></i></b> on the field, deal 20 damage instead.",
         "required_listeners": [
-            "CARD_PLAYED",
-            "TURN_END"
+            "TURN_END",
+            "CARD_PLAYED"
         ]
     },
     "90034320": {
@@ -570,8 +570,8 @@
         ],
         "raw_effects_text": "When this card is discarded, deal 1 damage to the enemy leader and restore 1 defense to your leader.\n<hr>Deal 1 damage to the enemy leader. Restore 1 defense to your leader.",
         "required_listeners": [
-            "CARD_PLAYED",
-            "CARD_DISCARDED"
+            "CARD_DISCARDED",
+            "CARD_PLAYED"
         ]
     },
     "90034330": {
@@ -1156,8 +1156,8 @@
         ],
         "raw_effects_text": "<b><color=Keyword>Storm</color></b>\nWhen this card leaves the field, banish it.\nAt the end of your turn, banish this card.",
         "required_listeners": [
-            "LEAVE_FIELD",
-            "TURN_END"
+            "TURN_END",
+            "LEAVE_FIELD"
         ]
     },
     "90021310": {
@@ -1306,9 +1306,7 @@
             {
                 "type": "MODE",
                 "processes": [
-                    {
-                        "process": "CHOOSE"
-                    }
+                    {}
                 ],
                 "choices": [],
                 "process": "CHOOSE"
@@ -1905,8 +1903,8 @@
         ],
         "raw_effects_text": "<b><color=Keyword>Fuse</color></b>: <b><i><color=Keyword>Ominous Artifact β</color></i></b> and <b><i><color=Keyword>Ominous Artifact γ</color></i></b>\nWhen you've <b><color=Keyword>Fuse</color><color=Keyword>d</color></b> both to this card, transform it into a <b><i><color=Keyword>Masterwork Artifact Ω</color></i></b>.\n<hr>At the end of your turn, restore 3 defense to your leader.",
         "required_listeners": [
-            "CARD_PLAYED",
-            "TURN_END"
+            "TURN_END",
+            "CARD_PLAYED"
         ]
     },
     "90073120": {
@@ -2674,9 +2672,7 @@
             {
                 "type": "MODE",
                 "processes": [
-                    {
-                        "process": "CHOOSE"
-                    }
+                    {}
                 ],
                 "choices": [],
                 "process": "CHOOSE"
