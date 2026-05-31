@@ -1040,6 +1040,31 @@ class TestScenarioBuilderCore(unittest.TestCase):
         # 파괴 효과가 발동하여 상대(player1) 필드의 적 추종자가 파괴되어야 한다.
         self.assertEqual(enemy_follower.current_zone, Zone.GRAVEYARD)
 
+    def test_detectives_lens_remove_ward(self):
+        """탐정의 돋보기 활성화 시 상대 수호 추종자의 수호 키워드가 제거되는지 검증한다."""
+        builder = GameScenarioBuilder("player1", "player2")
+        builder.set_active_player("player1")
+
+        # 1. 탐정의 돋보기 (ID 10001210)를 필드에 배치한다.
+        lens = builder.add_to_field("player1", "10001210")
+
+        # 2. 상대 필드에 수호(Ward)를 가진 Leah, Bellringer Angel을 배치한다.
+        enemy_follower = builder.add_to_field("player2", "Leah, Bellringer Angel")
+
+        game = builder.build()
+
+        # 3. 사용자 선택을 모사하여 상대 수호 추종자를 선택하게 한다.
+        game.gui.get_user_choice.return_value = enemy_follower.card_id
+
+        # 4. 탐정의 돋보기의 활성화(Engage) 효과를 실행한다.
+        success = game.engage_card(lens.card_id, "player1")
+        self.assertTrue(success)
+
+        # 5. 수호(Ward) 키워드가 제거되었는지 검증한다.
+        has_ward = any(eff.type == EffectType.WARD for eff in enemy_follower.effects)
+        self.assertFalse(has_ward)
+
+
 
 
 

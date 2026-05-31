@@ -8,12 +8,20 @@ def wrap_dict(val: Any) -> Any:
     """딕셔너리를 적절한 Process 또는 Effect 객체로 래핑합니다."""
     if isinstance(val, dict):
         wrapped_kwargs = {k: wrap_dict(v) for k, v in val.items()}
-        if 'process' in wrapped_kwargs and isinstance(wrapped_kwargs['process'], str):
-            from src.common.enums import ProcessType
-            try:
-                wrapped_kwargs['process'] = ProcessType[wrapped_kwargs['process']]
-            except KeyError:
-                pass
+        if 'process' in wrapped_kwargs:
+            from src.common.enums import ProcessType, EffectType
+            if isinstance(wrapped_kwargs['process'], str):
+                try:
+                    wrapped_kwargs['process'] = ProcessType[wrapped_kwargs['process']]
+                except KeyError:
+                    pass
+            proc = wrapped_kwargs['process']
+            if proc in [ProcessType.REMOVE_KEYWORD, ProcessType.TRIGGER_EFFECT, ProcessType.ADD_EFFECT]:
+                if 'value' in wrapped_kwargs and isinstance(wrapped_kwargs['value'], str):
+                    try:
+                        wrapped_kwargs['value'] = EffectType[wrapped_kwargs['value'].upper()]
+                    except KeyError:
+                        pass
         if 'target' in wrapped_kwargs and isinstance(wrapped_kwargs['target'], str):
             from src.common.enums import TargetType
             try:
