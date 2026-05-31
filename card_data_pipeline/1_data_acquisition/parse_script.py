@@ -242,8 +242,8 @@ def _parse_single_effect(text: str) -> Effect:
             effect_attrs = {k: v for k, v in extracted_data.items() if k not in ['action_text']}
             ef = Effect(type=pattern['type'], **effect_attrs)
 
-            # 마침표나 쉼표로 분리된 다중 액션을 가진 FANFARE/SPELL/ENGAGE의 처리를 수행합니다.
-            if pattern['type'] in [EffectType.FANFARE, EffectType.SPELL, EffectType.ENGAGE] and 'action_text' in extracted_data:
+            # 마침표나 쉼표로 분리된 다중 액션을 가진 FANFARE/SPELL/ENGAGE/LAST_WORDS의 처리를 수행합니다.
+            if pattern['type'] in [EffectType.FANFARE, EffectType.SPELL, EffectType.ENGAGE, EffectType.LAST_WORDS] and 'action_text' in extracted_data:
                 action_text = extracted_data['action_text']
                 # 콤마를 포함한 예외 카드명이 쪼개지지 않도록 임시 치환한다.
                 temp_map = {
@@ -283,14 +283,24 @@ def _parse_single_effect(text: str) -> Effect:
 
                 processes_list = []
                 if should_chain_actions(actions):
-                    # 대명사 참조가 있는 경우 post_action 체인으로 결합한다.
                     action_dicts = [parse_action(act) for act in actions]
-                    root_p_dict = action_dicts[0]
-                    current = root_p_dict
-                    for next_p_dict in action_dicts[1:]:
-                        current['post_action'] = next_p_dict
-                        current = next_p_dict
-                    processes_list.append(_dict_to_process_recursive(root_p_dict))
+                    has_summon = any(p.get('process') == ProcessType.SUMMON for p in action_dicts)
+                    if has_summon:
+                        # SUMMON이 있는 경우 processes 리스트에 평평하게 추가하고 대명사를 SUMMONED_FOLLOWERS로 보정한다.
+                        first_action = action_dicts[0]
+                        processes_list.append(Process(**first_action))
+                        for p_dict in action_dicts[1:]:
+                            if p_dict.get('target') == TargetType.SELF and p_dict.get('process') != ProcessType.SUMMON:
+                                p_dict['target'] = TargetType.SUMMONED_FOLLOWERS
+                            processes_list.append(Process(**p_dict))
+                    else:
+                        # SUMMON이 없는 일반적인 대명사 참조는 기존처럼 post_action 체인으로 결합한다.
+                        root_p_dict = action_dicts[0]
+                        current = root_p_dict
+                        for next_p_dict in action_dicts[1:]:
+                            current['post_action'] = next_p_dict
+                            current = next_p_dict
+                        processes_list.append(_dict_to_process_recursive(root_p_dict))
                 else:
                     for act in actions:
                         processes_list.append(Process(**parse_action(act)))
@@ -538,7 +548,7 @@ ACTION_PATTERNS = [
     # 다중 효과 및 단일 효과를 부여합니다 (non-greedy 매칭을 적용합니다).
     {'regex': r"Give (.*?) (Ward|Storm|Rush|Bane|Drain|Barrier|Ambush|Intimidate|Aura)\s+and\s+(Ward|Storm|Rush|Bane|Drain|Barrier|Ambush|Intimidate|Aura)", 'process': ProcessType.ADD_EFFECT, 'groups': ['target_text', 'value', 'value2']},
     {'regex': r"Give (.*?) (Ward|Storm|Rush|Bane|Drain|Barrier|Ambush|Intimidate|Aura)", 'process': ProcessType.ADD_EFFECT, 'groups': ['target_text', 'value']},
-    {'regex': r"Remove (Ward|Storm|Rush|Bane|Drain|Barrier|Ambush|Intimidate|Aura) from (.*)", 'process': ProcessType.REMOVE_KEYWORD, 'groups': ['value', 'target_text']},
+    {'regex': r"Remove (Ward|Storm|Rush|Bane|Drain|Barrier|Ambush|Intimidate|Aura|Last Words) from (.*)", 'process': ProcessType.REMOVE_KEYWORD, 'groups': ['value', 'target_text']},
     {'regex': r"remove all abilities from (.*)", 'process': ProcessType.REMOVE_KEYWORD, 'groups': ['target_text']},
     {'regex': r"(?:and\s+)?deal it (\d+|X) damage", 'process': ProcessType.DEAL_DAMAGE, 'target': TargetType.SELF, 'groups': ['value']},
     
@@ -721,7 +731,12 @@ def parse_action(text: str):
                     if 'target' in target_res:
                         action['value'] = target_res['target']
                     else:
-                        action['value'] = groups['value']
+                        val_str = groups['value']
+                        val_upper = val_str.upper().replace(" ", "_")
+                        if val_upper in EffectType.__members__:
+                            action['value'] = val_upper
+                        else:
+                            action['value'] = val_str
 
             if 'target_count' in groups:
                 try:

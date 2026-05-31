@@ -1065,9 +1065,10 @@ class TestScenarioBuilderCore(unittest.TestCase):
         self.assertFalse(has_ward)
 
     def test_post_action_list_resolution(self):
-        """post_action이 리스트 형태인 카드가 로딩되고 효과 참조가 올바르게 해결되는지 검증한다."""
+        """post_action이 리스트 형태인 카드가 로딩되고 효과 참조가 올바르게 해결되는지 검증합니다."""
         from src.common import card_data as cd
-        # Detective's Lens (10001210) 카드를 가져온다.
+        cd.load_card_databases('card_database/4_manual_database/card_database_manual.json')
+        # Detective's Lens (10001210) 카드를 가져옵니다.
         card = cd.get_card_data_by_id("10001210")
         self.assertIsNotNone(card)
         
@@ -1083,6 +1084,32 @@ class TestScenarioBuilderCore(unittest.TestCase):
                         self.assertTrue(isinstance(act, Process))
                         found_post_action = True
         self.assertTrue(found_post_action)
+
+    def test_comrade_of_the_swordmaster_last_words_removed(self):
+        """검성의 동포 파괴 시 새로운 검성의 동포가 소환되고 유언이 제거되는지 검증합니다."""
+        builder = GameScenarioBuilder("player1", "player2")
+        builder.set_active_player("player1")
+
+        # 검성의 동포 카드를 필드에 배치합니다.
+        comrade = builder.add_to_field("player1", "10321120")
+
+        game = builder.build()
+
+        # 파괴 이벤트를 발행하고 이벤트를 처리합니다.
+        from src.common.event import DestroyedOnFieldEvent
+        game.event_manager.publish(DestroyedOnFieldEvent(card_id=comrade.card_id))
+        game.process_events()
+
+        # 필드에 검성의 동포 복사본이 소환되었는지 검증합니다 (원래 카드 + 새로 소환된 카드 총 2장).
+        p1_field = game.game_state_manager.players["player1"].field.get_cards()
+        self.assertEqual(len(p1_field), 2)
+        summoned_card = p1_field[1]
+        self.assertEqual(summoned_card.card_data.card_id, "10321120")
+
+        # 소환된 검성의 동포는 유언 효과가 제거되었음을 검증합니다.
+        has_last_words = any(eff.type == EffectType.LAST_WORDS for eff in summoned_card.effects)
+        self.assertFalse(has_last_words)
+
 
 
 
