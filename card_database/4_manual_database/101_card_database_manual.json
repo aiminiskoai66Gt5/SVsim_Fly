@@ -16,9 +16,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "return it to deck"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "return it to deck"
+                            }
+                        ]
                     }
                 ]
             },
@@ -558,9 +560,11 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -628,9 +632,11 @@
                     {
                         "process": "SELECT",
                         "target": "ANOTHER_ALLY_CARD_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "return it to hand"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "return it to hand"
+                            }
+                        ]
                     }
                 ]
             },
@@ -698,14 +704,16 @@
                     {
                         "process": "SELECT",
                         "target": "ALLY_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                1,
-                                1
-                            ]
-                        }
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    1,
+                                    1
+                                ]
+                            }
+                        ]
                     }
                 ]
             }
@@ -770,9 +778,11 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "set its defense to 1"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "set its defense to 1"
+                            }
+                        ]
                     }
                 ]
             },
@@ -792,11 +802,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 1,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 1,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             }
@@ -894,11 +906,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 4,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 4,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             }
@@ -978,9 +992,11 @@
                     {
                         "process": "SELECT",
                         "target": "ANOTHER_ALLY_CARD_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "return it to hand"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "return it to hand"
+                            }
+                        ]
                     }
                 ]
             }
@@ -1144,14 +1160,16 @@
                     {
                         "process": "SELECT",
                         "target": "ANOTHER_ALLY_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                1,
-                                1
-                            ]
-                        }
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    1,
+                                    1
+                                ]
+                            }
+                        ]
                     }
                 ]
             },
@@ -1333,9 +1351,11 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1650,11 +1670,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 5,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 5,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1788,11 +1810,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_LEADER",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 5,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 5,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1984,11 +2008,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": "VARIABLE",
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": "VARIABLE",
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2025,9 +2051,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "return it to deck"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "return it to deck"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2148,9 +2176,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "spellboost it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "spellboost it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2207,11 +2237,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": "VARIABLE",
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": "VARIABLE",
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             }
@@ -2478,23 +2510,31 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "set its defense to 1",
-                            "post_action": {
-                                "raw_action_text": "and",
-                                "post_action": {
-                                    "raw_action_text": "until the end of your opponent's turn",
-                                    "post_action": {
-                                        "process": "ADD_EFFECT",
-                                        "value": {
-                                            "type": "DISABLE",
-                                            "processes": []
-                                        },
-                                        "target": "SELF"
+                        "post_action": [
+                            {
+                                "raw_action_text": "set its defense to 1",
+                                "post_action": [
+                                    {
+                                        "raw_action_text": "and",
+                                        "post_action": [
+                                            {
+                                                "raw_action_text": "until the end of your opponent's turn",
+                                                "post_action": [
+                                                    {
+                                                        "process": "ADD_EFFECT",
+                                                        "value": {
+                                                            "type": "DISABLE",
+                                                            "processes": []
+                                                        },
+                                                        "target": "SELF"
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     }
-                                }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -2521,11 +2561,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": "VARIABLE",
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": "VARIABLE",
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2995,9 +3037,11 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             }
@@ -3214,22 +3258,26 @@
                     {
                         "process": "SELECT",
                         "target": "ANOTHER_ALLY_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                2,
-                                2
-                            ],
-                            "post_action": {
+                        "post_action": [
+                            {
                                 "process": "STAT_BUFF",
+                                "target": "SELF",
                                 "value": [
-                                    3,
-                                    3
+                                    2,
+                                    2
                                 ],
-                                "target": "SELF"
+                                "post_action": [
+                                    {
+                                        "process": "STAT_BUFF",
+                                        "value": [
+                                            3,
+                                            3
+                                        ],
+                                        "target": "SELF"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -3437,9 +3485,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ],
                 "cost": 3
@@ -3469,9 +3519,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -3780,12 +3832,16 @@
                     {
                         "process": "SELECT",
                         "raw_target_text": "an allied",
-                        "post_action": {
-                            "raw_action_text": "enemy follower on the field",
-                            "post_action": {
-                                "raw_action_text": "destroy them"
+                        "post_action": [
+                            {
+                                "raw_action_text": "enemy follower on the field",
+                                "post_action": [
+                                    {
+                                        "raw_action_text": "destroy them"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -3927,11 +3983,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 5,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 5,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -4184,11 +4242,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_LEADER",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 3,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 3,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -4707,14 +4767,16 @@
                     {
                         "process": "SELECT",
                         "target": "ALLY_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                1,
-                                1
-                            ]
-                        }
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    1,
+                                    1
+                                ]
+                            }
+                        ]
                     }
                 ]
             }
@@ -4750,11 +4812,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 4,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 4,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -4973,9 +5037,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -5221,14 +5287,18 @@
                 "processes": [
                     {
                         "raw_action_text": "Once on each of your turns",
-                        "post_action": {
-                            "raw_action_text": "when an allied Puppetry follower enters the field",
-                            "post_action": {
-                                "process": "ADD_EFFECT",
-                                "target": "SELF",
-                                "value": "Bane"
+                        "post_action": [
+                            {
+                                "raw_action_text": "when an allied Puppetry follower enters the field",
+                                "post_action": [
+                                    {
+                                        "process": "ADD_EFFECT",
+                                        "target": "SELF",
+                                        "value": "Bane"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -5437,11 +5507,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 3,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 3,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -5478,24 +5550,28 @@
                     {
                         "process": "CHOOSE",
                         "value": 2,
-                        "post_action": {
-                            "process": "SUMMON",
-                            "target": "OWN_LEADER",
-                            "value": "exact copy of each",
-                            "post_action": {
-                                "process": "ADD_EFFECT",
-                                "value": {
-                                    "type": "ON_OPPONENTS_TURN_END",
-                                    "processes": [
-                                        {
-                                            "process": "DESTROY",
-                                            "target": "SELF"
-                                        }
-                                    ]
-                                },
-                                "raw_target_text": "the exact copies"
+                        "post_action": [
+                            {
+                                "process": "SUMMON",
+                                "target": "OWN_LEADER",
+                                "value": "exact copy of each",
+                                "post_action": [
+                                    {
+                                        "process": "ADD_EFFECT",
+                                        "value": {
+                                            "type": "ON_OPPONENTS_TURN_END",
+                                            "processes": [
+                                                {
+                                                    "process": "DESTROY",
+                                                    "target": "SELF"
+                                                }
+                                            ]
+                                        },
+                                        "raw_target_text": "the exact copies"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -5861,11 +5937,13 @@
                     {
                         "process": "CHOOSE",
                         "value": 3,
-                        "post_action": {
-                            "process": "SUMMON",
-                            "target": "OWN_LEADER",
-                            "value": "exact copy of each"
-                        }
+                        "post_action": [
+                            {
+                                "process": "SUMMON",
+                                "target": "OWN_LEADER",
+                                "value": "exact copy of each"
+                            }
+                        ]
                     }
                 ]
             },

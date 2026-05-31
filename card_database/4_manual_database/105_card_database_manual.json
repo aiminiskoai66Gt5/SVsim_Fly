@@ -16,9 +16,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -120,11 +122,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 10,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 10,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -552,9 +556,11 @@
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
                         "target_card_type": "SPELL",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -827,14 +833,16 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "ADD_EFFECT",
-                            "value": {
-                                "type": "DISABLE",
-                                "processes": []
-                            },
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "ADD_EFFECT",
+                                "value": {
+                                    "type": "DISABLE",
+                                    "processes": []
+                                },
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1042,9 +1050,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1064,14 +1074,18 @@
                 "processes": [
                     {
                         "raw_action_text": "Whenever you play a spell",
-                        "post_action": {
-                            "raw_action_text": "if this follower is evolved",
-                            "post_action": {
-                                "process": "SUMMON",
-                                "target": "OWN_LEADER",
-                                "value": "Imari's Little Buddies"
+                        "post_action": [
+                            {
+                                "raw_action_text": "if this follower is evolved",
+                                "post_action": [
+                                    {
+                                        "process": "SUMMON",
+                                        "target": "OWN_LEADER",
+                                        "value": "Imari's Little Buddies"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             },
@@ -1184,11 +1198,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 7,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 7,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1622,9 +1638,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1949,11 +1967,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 2,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 2,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2111,11 +2131,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 5,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 5,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2172,9 +2194,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2336,14 +2360,18 @@
                 "processes": [
                     {
                         "raw_action_text": "During your turn",
-                        "post_action": {
-                            "raw_action_text": "whenever your leader's defense is restored",
-                            "post_action": {
-                                "process": "SUMMON",
-                                "target": "OWN_LEADER",
-                                "value": "Fox of Purity"
+                        "post_action": [
+                            {
+                                "raw_action_text": "whenever your leader's defense is restored",
+                                "post_action": [
+                                    {
+                                        "process": "SUMMON",
+                                        "target": "OWN_LEADER",
+                                        "value": "Fox of Purity"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             },
@@ -2459,14 +2487,18 @@
                 "processes": [
                     {
                         "raw_action_text": "Then",
-                        "post_action": {
-                            "raw_action_text": "if you have at least 4 cards with the same cost in your hand",
-                            "post_action": {
-                                "process": "DEAL_DAMAGE",
-                                "target": "ALL_OPPONENTS",
-                                "value": 4
+                        "post_action": [
+                            {
+                                "raw_action_text": "if you have at least 4 cards with the same cost in your hand",
+                                "post_action": [
+                                    {
+                                        "process": "DEAL_DAMAGE",
+                                        "target": "ALL_OPPONENTS",
+                                        "value": 4
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             },
@@ -2503,11 +2535,13 @@
                     {
                         "process": "SELECT",
                         "raw_target_text": "a card on the field",
-                        "post_action": {
-                            "process": "TRANSFORM",
-                            "target": "SELF",
-                            "value": "an Imari's Little Buddies"
-                        }
+                        "post_action": [
+                            {
+                                "process": "TRANSFORM",
+                                "target": "SELF",
+                                "value": "an Imari's Little Buddies"
+                            }
+                        ]
                     }
                 ]
             }
@@ -2708,14 +2742,16 @@
                     {
                         "process": "EVOLVE",
                         "raw_target_text": "another random unevolved allied follower with Ward",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                1,
-                                1
-                            ]
-                        }
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    1,
+                                    1
+                                ]
+                            }
+                        ]
                     }
                 ]
             },
@@ -2964,9 +3000,11 @@
                 "processes": [
                     {
                         "raw_action_text": "When you draw this card",
-                        "post_action": {
-                            "raw_action_text": "set its cost to 3 until the end of the turn"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "set its cost to 3 until the end of the turn"
+                            }
+                        ]
                     }
                 ]
             },
@@ -3084,10 +3122,12 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "BANISH",
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "BANISH",
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -3179,11 +3219,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 5,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 5,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -3375,13 +3417,17 @@
                 "processes": [
                     {
                         "raw_action_text": "Whenever you play another card",
-                        "post_action": {
-                            "raw_action_text": "if there's a card on the field other than it with the same base cost",
-                            "post_action": {
-                                "process": "ADVANCE_COUNTDOWN",
-                                "value": 1
+                        "post_action": [
+                            {
+                                "raw_action_text": "if there's a card on the field other than it with the same base cost",
+                                "post_action": [
+                                    {
+                                        "process": "ADVANCE_COUNTDOWN",
+                                        "value": 1
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             },

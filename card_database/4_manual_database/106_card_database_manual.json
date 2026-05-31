@@ -16,11 +16,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 4,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 4,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -70,14 +72,16 @@
                     {
                         "process": "SELECT",
                         "target": "ALLY_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                2,
-                                2
-                            ]
-                        }
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    2,
+                                    2
+                                ]
+                            }
+                        ]
                     }
                 ]
             }
@@ -332,14 +336,18 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "BANISH",
-                            "target": "SELF",
-                            "post_action": {
-                                "process": "SUMMON_COPY",
-                                "target": "OWN_LEADER"
+                        "post_action": [
+                            {
+                                "process": "BANISH",
+                                "target": "SELF",
+                                "post_action": [
+                                    {
+                                        "process": "SUMMON_COPY",
+                                        "target": "OWN_LEADER"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -536,20 +544,24 @@
                         "process": "ADD_CARD_TO_HAND",
                         "target": "OWN_LEADER",
                         "condition": "COST_IS_7",
-                        "post_action": {
-                            "process": "SET_COST",
-                            "value": 5
-                        },
+                        "post_action": [
+                            {
+                                "process": "SET_COST",
+                                "value": 5
+                            }
+                        ],
                         "value": "Beheading Eld Blades"
                     },
                     {
                         "process": "ADD_CARD_TO_HAND",
                         "target": "OWN_LEADER",
                         "condition": "COST_IS_5",
-                        "post_action": {
-                            "process": "SET_COST",
-                            "value": 3
-                        },
+                        "post_action": [
+                            {
+                                "process": "SET_COST",
+                                "value": 3
+                            }
+                        ],
                         "value": "Beheading Eld Blades"
                     }
                 ]
@@ -607,17 +619,21 @@
                         "process": "SUMMON",
                         "target": "OWN_LEADER",
                         "value": "Crystalspawn",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                1,
-                                0
-                            ],
-                            "post_action": {
-                                "raw_action_text": "Storm"
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    1,
+                                    0
+                                ],
+                                "post_action": [
+                                    {
+                                        "raw_action_text": "Storm"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             },
@@ -631,14 +647,16 @@
                             "Crystalspawn"
                         ],
                         "target": "OWN_LEADER",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                1,
-                                0
-                            ]
-                        }
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    1,
+                                    0
+                                ]
+                            }
+                        ]
                     }
                 ]
             },
@@ -712,14 +730,18 @@
                         "process": "SUMMON",
                         "target": "OWN_LEADER",
                         "value": "Ominous Artifact",
-                        "post_action": {
-                            "process": "ADD_EFFECT",
-                            "target": "SELF",
-                            "value": "Bane",
-                            "post_action": {
-                                "raw_action_text": "Ward"
+                        "post_action": [
+                            {
+                                "process": "ADD_EFFECT",
+                                "target": "SELF",
+                                "value": "Bane",
+                                "post_action": [
+                                    {
+                                        "raw_action_text": "Ward"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -767,11 +789,13 @@
                             "Crystalspawn"
                         ],
                         "target": "OWN_LEADER",
-                        "post_action": {
-                            "process": "ADD_EFFECT",
-                            "target": "SELF",
-                            "value": "Storm"
-                        }
+                        "post_action": [
+                            {
+                                "process": "ADD_EFFECT",
+                                "target": "SELF",
+                                "value": "Storm"
+                            }
+                        ]
                     }
                 ]
             },
@@ -967,9 +991,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1057,12 +1083,16 @@
                 "processes": [
                     {
                         "raw_action_text": "If you selected one",
-                        "post_action": {
-                            "raw_action_text": "destroy it",
-                            "post_action": {
-                                "process": "EVOLVE"
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it",
+                                "post_action": [
+                                    {
+                                        "process": "EVOLVE"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             },
@@ -1150,9 +1180,11 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1183,11 +1215,13 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "process": "TRANSFORM",
-                            "target": "SELF",
-                            "value": "OPPONENT_DECK_RANDOM"
-                        }
+                        "post_action": [
+                            {
+                                "process": "TRANSFORM",
+                                "target": "SELF",
+                                "value": "OPPONENT_DECK_RANDOM"
+                            }
+                        ]
                     }
                 ]
             }
@@ -1410,9 +1444,11 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1480,9 +1516,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "return it to deck"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "return it to deck"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1522,9 +1560,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1762,9 +1802,11 @@
                     {
                         "process": "CHOOSE",
                         "value": 3,
-                        "post_action": {
-                            "raw_action_text": "destroy them"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy them"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1968,20 +2010,26 @@
                         "process": "SUMMON",
                         "target": "OWN_LEADER",
                         "value": "Ludicrous Ordnance",
-                        "post_action": {
-                            "raw_action_text": "Shoddy Plaything",
-                            "post_action": {
-                                "raw_action_text": "Substandard Puppet",
-                                "post_action": {
-                                    "process": "STAT_BUFF",
-                                    "target": "SELF",
-                                    "value": [
-                                        0,
-                                        1
-                                    ]
-                                }
+                        "post_action": [
+                            {
+                                "raw_action_text": "Shoddy Plaything",
+                                "post_action": [
+                                    {
+                                        "raw_action_text": "Substandard Puppet",
+                                        "post_action": [
+                                            {
+                                                "process": "STAT_BUFF",
+                                                "target": "SELF",
+                                                "value": [
+                                                    0,
+                                                    1
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -2040,11 +2088,13 @@
                         "process": "SUMMON",
                         "target": "OWN_LEADER",
                         "value": "Fearless Soldier",
-                        "post_action": {
-                            "process": "ADD_EFFECT",
-                            "target": "SELF",
-                            "value": "Bane"
-                        }
+                        "post_action": [
+                            {
+                                "process": "ADD_EFFECT",
+                                "target": "SELF",
+                                "value": "Bane"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2198,9 +2248,11 @@
                             4,
                             4
                         ],
-                        "post_action": {
-                            "raw_action_text": "activate its Fanfare ability"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "activate its Fanfare ability"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2310,9 +2362,11 @@
                     {
                         "process": "SELECT",
                         "target": "ALLY_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2352,9 +2406,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2483,9 +2539,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2538,23 +2596,25 @@
                         "process": "ADD_CARD_TO_HAND",
                         "target": "OWN_LEADER",
                         "value": "Depths of the Eld Lance",
-                        "post_action": {
-                            "process": "ADD_EFFECT",
-                            "value": {
-                                "type": "SPELL",
-                                "processes": [
-                                    {
-                                        "raw_action_text": "Whenever an allied follower evolves"
-                                    },
-                                    {
-                                        "process": "DEAL_DAMAGE",
-                                        "target": "ALL_OPPONENTS",
-                                        "value": 1
-                                    }
-                                ]
-                            },
-                            "raw_target_text": "your faith"
-                        }
+                        "post_action": [
+                            {
+                                "process": "ADD_EFFECT",
+                                "value": {
+                                    "type": "SPELL",
+                                    "processes": [
+                                        {
+                                            "raw_action_text": "Whenever an allied follower evolves"
+                                        },
+                                        {
+                                            "process": "DEAL_DAMAGE",
+                                            "target": "ALL_OPPONENTS",
+                                            "value": 1
+                                        }
+                                    ]
+                                },
+                                "raw_target_text": "your faith"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2802,9 +2862,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "discard it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "discard it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2814,9 +2876,11 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             }
@@ -2843,9 +2907,11 @@
                     {
                         "process": "SELECT",
                         "raw_target_text": "another card on the field",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2948,10 +3014,12 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "BANISH",
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "BANISH",
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },

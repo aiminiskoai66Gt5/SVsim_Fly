@@ -650,13 +650,17 @@ class EffectProcessor:
             drawn_card = deck.pop(0)
             game_state_manager.move_card(drawn_card.card_id, Zone.DECK, Zone.HAND)
 
-            if 'post_action' in effect_data.attributes.keys():
-                post_action = effect_data.post_action
-                handler = self.process_handlers.get(post_action["process"])
-                if handler:
-                    handler(post_action, drawn_card, game_state_manager)
-                else:
-                    self._log_error(f"[ERROR] 처리 타입 {post_action['process'].value}에 대한 핸들러가 정의되지 않았습니다.")
+            post_actions = getattr(effect_data, "post_action", None)
+            if post_actions:
+                if not isinstance(post_actions, list):
+                    post_actions = [post_actions]
+                for post_act in post_actions:
+                    proc_val = post_act.process if hasattr(post_act, "process") else post_act.get("process")
+                    handler = self.process_handlers.get(proc_val)
+                    if handler:
+                        handler(post_act, drawn_card, game_state_manager)
+                    else:
+                        self._log_error(f"[ERROR] 처리 타입 {proc_val.value if hasattr(proc_val, 'value') else proc_val}에 대한 핸들러가 정의되지 않았습니다.")
 
         print(f"[LOG] 처리 내용: 카드 드로우, 타겟: {target_id}, 드로우 장수: {count}")
 
@@ -693,11 +697,14 @@ class EffectProcessor:
             print(f"[LOG] 처리 내용: 패에 카드 추가, 타겟: {target_id}, 추가 카드: {card.get_display_name()}")
             
             # 후속 조치 효과가 정의되어 있다면 실행합니다.
-            post_action = getattr(effect_data, "post_action", None)
-            if post_action:
-                handler = self.process_handlers.get(post_action.process)
-                if handler:
-                    handler(post_action, card, game_state_manager)
+            post_actions = getattr(effect_data, "post_action", None)
+            if post_actions:
+                if not isinstance(post_actions, list):
+                    post_actions = [post_actions]
+                for post_act in post_actions:
+                    handler = self.process_handlers.get(post_act.process)
+                    if handler:
+                        handler(post_act, card, game_state_manager)
 
         elif isinstance(value, list):
             value_copy = list(value)
@@ -711,11 +718,14 @@ class EffectProcessor:
                 print(f"[LOG] 처리 내용: 패에 카드 추가, 타겟: {target_id}, 추가 카드: {card.get_display_name()}")
                 
                 # 후속 조치 효과가 정의되어 있다면 실행합니다.
-                post_action = getattr(effect_data, "post_action", None)
-                if post_action:
-                    handler = self.process_handlers.get(post_action.process)
-                    if handler:
-                        handler(post_action, card, game_state_manager)
+                post_actions = getattr(effect_data, "post_action", None)
+                if post_actions:
+                    if not isinstance(post_actions, list):
+                        post_actions = [post_actions]
+                    for post_act in post_actions:
+                        handler = self.process_handlers.get(post_act.process)
+                        if handler:
+                            handler(post_act, card, game_state_manager)
 
     def _process_summon(self, effect_data: Effect, target: Player, game_state_manager: 'GameStateManager'):
         """처리 - 필드에 카드 소환"""
@@ -730,11 +740,14 @@ class EffectProcessor:
             print(f"[LOG] 처리 내용: 필드에 카드 소환, 타겟: {target_id}, 소환 카드: {card.get_display_name()}")
 
             # 후속 조치 효과가 정의되어 있다면 실행합니다.
-            post_action = getattr(effect_data, "post_action", None)
-            if post_action:
-                handler = self.process_handlers.get(post_action.process)
-                if handler:
-                    handler(post_action, card, game_state_manager)
+            post_actions = getattr(effect_data, "post_action", None)
+            if post_actions:
+                if not isinstance(post_actions, list):
+                    post_actions = [post_actions]
+                for post_act in post_actions:
+                    handler = self.process_handlers.get(post_act.process)
+                    if handler:
+                        handler(post_act, card, game_state_manager)
 
         elif isinstance(value, list):
             value_copy = list(value)
@@ -746,11 +759,14 @@ class EffectProcessor:
                 print(f"[LOG] 처리 내용: 필드에 카드 소환, 타겟: {target_id}, 소환 카드: {card.get_display_name()}")
 
                 # 후속 조치 효과가 정의되어 있다면 실행합니다.
-                post_action = getattr(effect_data, "post_action", None)
-                if post_action:
-                    handler = self.process_handlers.get(post_action.process)
-                    if handler:
-                        handler(post_action, card, game_state_manager)
+                post_actions = getattr(effect_data, "post_action", None)
+                if post_actions:
+                    if not isinstance(post_actions, list):
+                        post_actions = [post_actions]
+                    for post_act in post_actions:
+                        handler = self.process_handlers.get(post_act.process)
+                        if handler:
+                            handler(post_act, card, game_state_manager)
 
     def _process_summon_copy(self, effect_data: Effect, target: Any, game_state_manager: 'GameStateManager'):
         """처리 - 복사본 소환"""
@@ -788,11 +804,14 @@ class EffectProcessor:
         print(f"[LOG] 처리 내용: 복사본 소환, 타겟: {owner_id}, 소환 카드: {card.get_display_name()}")
 
         # 후속 조치 효과가 정의되어 있다면 실행합니다.
-        post_action = getattr(effect_data, "post_action", None)
-        if post_action:
-            handler = self.process_handlers.get(post_action.process)
-            if handler:
-                handler(post_action, card, game_state_manager)
+        post_actions = getattr(effect_data, "post_action", None)
+        if post_actions:
+            if not isinstance(post_actions, list):
+                post_actions = [post_actions]
+            for post_act in post_actions:
+                handler = self.process_handlers.get(post_act.process)
+                if handler:
+                    handler(post_act, card, game_state_manager)
 
     def _process_deal_damage(self, effect_data: Effect, target: Any, game_state_manager: 'GameStateManager'):
         """처리 - 피해 입히기"""
@@ -878,29 +897,32 @@ class EffectProcessor:
         if not target or not hasattr(target, 'card_id'):
             return
 
-        post_action = getattr(effect_data, "post_action", None)
-        if post_action:
-            proc_val = post_action.process if hasattr(post_action, "process") else post_action.get("process")
-            handler = self.process_handlers.get(proc_val)
-            if handler:
-                # target이 손패에 있는 카드인 경우 (패 선택 후속 조치)
-                if getattr(target, "current_zone", None) == Zone.HAND:
-                    tgt_val = post_action.target if hasattr(post_action, "target") else post_action.get("target")
-                    # post_action이 TargetType.SELF 를 지목하면 시전자 카드를 대상으로 후속 조치를 취합니다.
-                    if tgt_val == TargetType.SELF:
-                        caster_id = getattr(effect_data, "caster_id", None)
-                        caster_card = game_state_manager.get_entity_by_id(caster_id) if caster_id else None
-                        handler(post_action, caster_card or target, game_state_manager)
-                    # 그 외 TRANSFORM, ADD_EFFECT 등의 카드 자체를 변형시키는 경우 target(선택된 카드)을 직접 전달합니다.
-                    elif proc_val in (ProcessType.TRANSFORM, ProcessType.ADD_EFFECT):
-                        handler(post_action, target, game_state_manager)
+        post_actions = getattr(effect_data, "post_action", None)
+        if post_actions:
+            if not isinstance(post_actions, list):
+                post_actions = [post_actions]
+            for post_act in post_actions:
+                proc_val = post_act.process if hasattr(post_act, "process") else post_act.get("process")
+                handler = self.process_handlers.get(proc_val)
+                if handler:
+                    # target이 손패에 있는 카드인 경우 (패 선택 후속 조치)
+                    if getattr(target, "current_zone", None) == Zone.HAND:
+                        tgt_val = post_act.target if hasattr(post_act, "target") else post_act.get("target")
+                        # post_action이 TargetType.SELF 를 지목하면 시전자 카드를 대상으로 후속 조치를 취합니다.
+                        if tgt_val == TargetType.SELF:
+                            caster_id = getattr(effect_data, "caster_id", None)
+                            caster_card = game_state_manager.get_entity_by_id(caster_id) if caster_id else None
+                            handler(post_act, caster_card or target, game_state_manager)
+                        # 그 외 TRANSFORM, ADD_EFFECT 등의 카드 자체를 변형시키는 경우 target(선택된 카드)을 직접 전달합니다.
+                        elif proc_val in (ProcessType.TRANSFORM, ProcessType.ADD_EFFECT):
+                            handler(post_act, target, game_state_manager)
+                        else:
+                            post_act.value = target.card_data
+                            owner = game_state_manager.players[target.owner_id]
+                            handler(post_act, owner, game_state_manager)
                     else:
-                        post_action.value = target.card_data
-                        owner = game_state_manager.players[target.owner_id]
-                        handler(post_action, owner, game_state_manager)
-                else:
-                    # target이 필드에 있는 카드인 경우 (필드 선택 후속 조치)
-                    handler(post_action, target, game_state_manager)
+                        # target이 필드에 있는 카드인 경우 (필드 선택 후속 조치)
+                        handler(post_act, target, game_state_manager)
             return
 
         # 선택된 타겟 카드를 필드에서 묘지로 파괴 이동합니다.
@@ -1262,14 +1284,17 @@ class EffectProcessor:
 
             # process가 없거나 변수 정의인 경우, post_action이 있는 경우에만 처리합니다.
             if not process_type or process_type == ProcessType.DEFINE_VARIABLE:
-                post_action = getattr(process, "post_action", None)
-                if post_action:
-                    proc_val = post_action.process if hasattr(post_action, "process") else post_action.get("process")
-                    handler = self.process_handlers.get(proc_val)
-                    if handler:
-                        target = game_state_manager.get_entity_by_id(target_id) if target_id else caster_card
-                        if target:
-                            handler(post_action, target, game_state_manager)
+                post_actions = getattr(process, "post_action", None)
+                if post_actions:
+                    if not isinstance(post_actions, list):
+                        post_actions = [post_actions]
+                    for post_act in post_actions:
+                        proc_val = post_act.process if hasattr(post_act, "process") else post_act.get("process")
+                        handler = self.process_handlers.get(proc_val)
+                        if handler:
+                            target = game_state_manager.get_entity_by_id(target_id) if target_id else caster_card
+                            if target:
+                                handler(post_act, target, game_state_manager)
                 else:
                     # post_action이 없고 raw_action_text가 카드 이름이라면 소환 효과로 대체 처리합니다.
                     raw_text = getattr(process, "raw_action_text", None)

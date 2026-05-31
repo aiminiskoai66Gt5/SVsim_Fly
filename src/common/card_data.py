@@ -392,6 +392,17 @@ def _resolve_single_value(val: str, effect: Any, card_id: str, global_card_db: D
     return val
 
 
+def _resolve_post_actions(post_action: Any, card_id: str, global_card_db: Dict[str, CardData]):
+    """후속 조치 목록 혹은 개별 조치의 카드 참조를 해결한다."""
+    if isinstance(post_action, list):
+        for act in post_action:
+            _resolve_post_actions(act, card_id, global_card_db)
+    elif isinstance(post_action, Process):
+        _resolve_process_references(post_action, card_id, global_card_db)
+    elif isinstance(post_action, Effect):
+        _resolve_effect_references_recursive(post_action, card_id, global_card_db)
+
+
 def _resolve_process_references(process: Process, card_id: str, global_card_db: Dict[str, CardData]):
     """개별 프로세스의 카드 참조를 해결합니다."""
     process_type = getattr(process, "process", None)
@@ -469,6 +480,10 @@ def _resolve_process_references(process: Process, card_id: str, global_card_db: 
                 if process_type not in safe_string_processes:
                     print(f"[WARNING] 카드 {card_id}의 프로세스 {process_name}에 예기치 않은 스트링 입력 {process.value}.")
 
+    post_action = getattr(process, "post_action", None)
+    if post_action:
+        _resolve_post_actions(post_action, card_id, global_card_db)
+
 
 def _resolve_effect_references_recursive(effect: Effect, card_id: str, global_card_db: Dict[str, CardData]):
     """개별 효과 및 내포된 후속 조치의 카드 참조를 재귀적으로 해결합니다."""
@@ -501,7 +516,7 @@ def _resolve_effect_references_recursive(effect: Effect, card_id: str, global_ca
 
     post_action = getattr(effect, "post_action", None)
     if post_action:
-        _resolve_effect_references_recursive(post_action, card_id, global_card_db)
+        _resolve_post_actions(post_action, card_id, global_card_db)
 
 def resolve_card_references(card_db: Dict[str, CardData], global_card_db: Dict[str, CardData]):
     """카드 데이터베이스 내의 카드 참조를 해결합니다."""

@@ -1064,6 +1064,26 @@ class TestScenarioBuilderCore(unittest.TestCase):
         has_ward = any(eff.type == EffectType.WARD for eff in enemy_follower.effects)
         self.assertFalse(has_ward)
 
+    def test_post_action_list_resolution(self):
+        """post_action이 리스트 형태인 카드가 로딩되고 효과 참조가 올바르게 해결되는지 검증한다."""
+        from src.common import card_data as cd
+        # Detective's Lens (10001210) 카드를 가져온다.
+        card = cd.get_card_data_by_id("10001210")
+        self.assertIsNotNone(card)
+        
+        # post_action이 파싱되어 리스트 형태로 존재하고, 올바르게 Process 객체로 래핑되어 있는지 확인한다.
+        found_post_action = False
+        for effect in card.effects:
+            for process in effect.processes:
+                post_action = getattr(process, "post_action", None)
+                if post_action:
+                    self.assertTrue(isinstance(post_action, list))
+                    for act in post_action:
+                        from src.common.effect import Process
+                        self.assertTrue(isinstance(act, Process))
+                        found_post_action = True
+        self.assertTrue(found_post_action)
+
 
 
 

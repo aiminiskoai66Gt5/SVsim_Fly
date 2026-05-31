@@ -15,15 +15,19 @@
                 "processes": [
                     {
                         "raw_action_text": "If there's a super-evolved allied follower on the field",
-                        "post_action": {
-                            "process": "SELECT",
-                            "target": "OPPONENT_FOLLOWER_CHOICE",
-                            "post_action": {
-                                "process": "DEAL_DAMAGE",
-                                "value": 4,
-                                "target": "SELF"
+                        "post_action": [
+                            {
+                                "process": "SELECT",
+                                "target": "OPPONENT_FOLLOWER_CHOICE",
+                                "post_action": [
+                                    {
+                                        "process": "DEAL_DAMAGE",
+                                        "value": 4,
+                                        "target": "SELF"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -50,14 +54,16 @@
                     {
                         "process": "SELECT",
                         "raw_target_text": "a follower on the field",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                2,
-                                -2
-                            ]
-                        }
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    2,
+                                    -2
+                                ]
+                            }
+                        ]
                     }
                 ]
             }
@@ -185,10 +191,12 @@
                     {
                         "process": "SELECT",
                         "raw_target_text": "an enemy card on the field",
-                        "post_action": {
-                            "process": "BANISH",
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "BANISH",
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -271,11 +279,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 4,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 4,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -599,14 +609,16 @@
                     {
                         "process": "CHOOSE",
                         "value": 2,
-                        "post_action": {
-                            "process": "ADD_EFFECT",
-                            "value": {
-                                "type": "DISABLE",
-                                "processes": []
-                            },
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "ADD_EFFECT",
+                                "value": {
+                                    "type": "DISABLE",
+                                    "processes": []
+                                },
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -873,9 +885,11 @@
                 "processes": [
                     {
                         "raw_action_text": "Follower Strike: If the opposing follower is damaged",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             }
@@ -1086,9 +1100,11 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "return it to deck"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "return it to deck"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1126,9 +1142,11 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "raw_action_text": "destroy it"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "destroy it"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1207,11 +1225,13 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "value": 3,
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "value": 3,
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1715,19 +1735,23 @@
                     {
                         "process": "SELECT",
                         "target": "ALLY_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                1,
-                                1
-                            ],
-                            "post_action": {
-                                "process": "SUMMON",
-                                "target": "OWN_LEADER",
-                                "value": "Pyrewyrm Blade\""
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    1,
+                                    1
+                                ],
+                                "post_action": [
+                                    {
+                                        "process": "SUMMON",
+                                        "target": "OWN_LEADER",
+                                        "value": "Pyrewyrm Blade\""
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ],
                 "cost": 1
@@ -1755,9 +1779,11 @@
                     {
                         "process": "GAIN_CREST",
                         "value": "Neptune",
-                        "post_action": {
-                            "raw_action_text": "Arbiter of Tides"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "Arbiter of Tides"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1815,11 +1841,13 @@
                     {
                         "process": "SELECT",
                         "target": "OWN_HAND_CHOICE",
-                        "post_action": {
-                            "process": "DEAL_DAMAGE",
-                            "target": "ALL_OPPONENT_FOLLOWERS",
-                            "value": 3
-                        }
+                        "post_action": [
+                            {
+                                "process": "DEAL_DAMAGE",
+                                "target": "ALL_OPPONENT_FOLLOWERS",
+                                "value": 3
+                            }
+                        ]
                     }
                 ]
             }
@@ -1845,11 +1873,13 @@
                 "processes": [
                     {
                         "raw_action_text": "If you're in Overflow",
-                        "post_action": {
-                            "process": "ADD_CARD_TO_HAND",
-                            "target": "OWN_LEADER",
-                            "value": "Whitefrost Whisper"
-                        }
+                        "post_action": [
+                            {
+                                "process": "ADD_CARD_TO_HAND",
+                                "target": "OWN_LEADER",
+                                "value": "Whitefrost Whisper"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2022,12 +2052,16 @@
                 "processes": [
                     {
                         "raw_action_text": "Whenever another allied follower super-evolves",
-                        "post_action": {
-                            "raw_action_text": "give it",
-                            "post_action": {
-                                "raw_action_text": "this follower +2/+0"
+                        "post_action": [
+                            {
+                                "raw_action_text": "give it",
+                                "post_action": [
+                                    {
+                                        "raw_action_text": "this follower +2/+0"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -2114,11 +2148,13 @@
                     {
                         "process": "SELECT",
                         "target": "ANOTHER_ALLY_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "ADD_EFFECT",
-                            "target": "SELF",
-                            "value": "Bane"
-                        }
+                        "post_action": [
+                            {
+                                "process": "ADD_EFFECT",
+                                "target": "SELF",
+                                "value": "Bane"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2356,19 +2392,21 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "ADD_EFFECT",
-                            "value": {
-                                "type": "ON_MY_TURN_END",
-                                "processes": [
-                                    {
-                                        "process": "DESTROY",
-                                        "target": "SELF"
-                                    }
-                                ]
-                            },
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "ADD_EFFECT",
+                                "value": {
+                                    "type": "ON_MY_TURN_END",
+                                    "processes": [
+                                        {
+                                            "process": "DESTROY",
+                                            "target": "SELF"
+                                        }
+                                    ]
+                                },
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             }
@@ -2434,9 +2472,11 @@
                         "process": "DEAL_DAMAGE",
                         "target": "OPPONENT_FOLLOWER_RANDOM",
                         "value": 2,
-                        "post_action": {
-                            "raw_action_text": "do it 2 times instead"
-                        }
+                        "post_action": [
+                            {
+                                "raw_action_text": "do it 2 times instead"
+                            }
+                        ]
                     }
                 ]
             }
@@ -2463,10 +2503,12 @@
                     {
                         "process": "SELECT",
                         "target": "OPPONENT_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "BANISH",
-                            "target": "SELF"
-                        }
+                        "post_action": [
+                            {
+                                "process": "BANISH",
+                                "target": "SELF"
+                            }
+                        ]
                     }
                 ]
             }
@@ -2493,14 +2535,16 @@
                     {
                         "process": "SELECT",
                         "target": "ALLY_FOLLOWER_CHOICE",
-                        "post_action": {
-                            "process": "STAT_BUFF",
-                            "target": "SELF",
-                            "value": [
-                                0,
-                                1
-                            ]
-                        }
+                        "post_action": [
+                            {
+                                "process": "STAT_BUFF",
+                                "target": "SELF",
+                                "value": [
+                                    0,
+                                    1
+                                ]
+                            }
+                        ]
                     }
                 ]
             },
@@ -2741,19 +2785,23 @@
                 "processes": [
                     {
                         "raw_action_text": "If there's a super-evolved allied follower on the field",
-                        "post_action": {
-                            "process": "ADD_CARD_TO_HAND",
-                            "target": "OWN_LEADER",
-                            "value": "Puppet",
-                            "post_action": {
-                                "process": "STAT_BUFF",
-                                "target": "SELF",
-                                "value": [
-                                    3,
-                                    0
+                        "post_action": [
+                            {
+                                "process": "ADD_CARD_TO_HAND",
+                                "target": "OWN_LEADER",
+                                "value": "Puppet",
+                                "post_action": [
+                                    {
+                                        "process": "STAT_BUFF",
+                                        "target": "SELF",
+                                        "value": [
+                                            3,
+                                            0
+                                        ]
+                                    }
                                 ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -2804,23 +2852,27 @@
                         "target_card_type": "FOLLOWER",
                         "target_cost": 5,
                         "target_cost_condition": "LESS",
-                        "post_action": {
-                            "process": "SUMMON_COPY",
-                            "target": "OWN_LEADER",
-                            "post_action": {
-                                "process": "ADD_EFFECT",
-                                "value": {
-                                    "type": "ON_OPPONENTS_TURN_END",
-                                    "processes": [
-                                        {
-                                            "process": "DESTROY",
-                                            "target": "SELF"
-                                        }
-                                    ]
-                                },
-                                "target": "EXACT_COPY"
+                        "post_action": [
+                            {
+                                "process": "SUMMON_COPY",
+                                "target": "OWN_LEADER",
+                                "post_action": [
+                                    {
+                                        "process": "ADD_EFFECT",
+                                        "value": {
+                                            "type": "ON_OPPONENTS_TURN_END",
+                                            "processes": [
+                                                {
+                                                    "process": "DESTROY",
+                                                    "target": "SELF"
+                                                }
+                                            ]
+                                        },
+                                        "target": "EXACT_COPY"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ],
                 "cost": 3
@@ -2851,11 +2903,13 @@
                         "target": "OWN_HAND_CHOICE",
                         "target_tribe": "PUPPETRY",
                         "target_card_type": "FOLLOWER",
-                        "post_action": {
-                            "process": "TRANSFORM",
-                            "target": "SELF",
-                            "value": "a Doll Slayer"
-                        }
+                        "post_action": [
+                            {
+                                "process": "TRANSFORM",
+                                "target": "SELF",
+                                "value": "a Doll Slayer"
+                            }
+                        ]
                     }
                 ]
             },
@@ -2915,16 +2969,20 @@
                         "target": "OWN_HAND_CHOICE",
                         "target_tribe": "ARTIFACT",
                         "target_card_type": "FOLLOWER",
-                        "post_action": {
-                            "process": "ADD_EFFECT",
-                            "target": "SELF",
-                            "value": "Rush",
-                            "post_action": {
-                                "process": "DRAW",
-                                "value": 1,
-                                "target": "OWN_LEADER"
+                        "post_action": [
+                            {
+                                "process": "ADD_EFFECT",
+                                "target": "SELF",
+                                "value": "Rush",
+                                "post_action": [
+                                    {
+                                        "process": "DRAW",
+                                        "value": 1,
+                                        "target": "OWN_LEADER"
+                                    }
+                                ]
                             }
-                        }
+                        ]
                     }
                 ]
             }
@@ -3070,10 +3128,12 @@
                         "target_card_type": "FOLLOWER",
                         "target_cost": 5,
                         "target_cost_condition": "LESS",
-                        "post_action": {
-                            "process": "SUMMON_COPY",
-                            "target": "OWN_LEADER"
-                        }
+                        "post_action": [
+                            {
+                                "process": "SUMMON_COPY",
+                                "target": "OWN_LEADER"
+                            }
+                        ]
                     }
                 ]
             },
