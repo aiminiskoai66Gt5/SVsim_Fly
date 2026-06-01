@@ -1088,6 +1088,10 @@ class TestScenarioBuilderCore(unittest.TestCase):
     def test_comrade_of_the_swordmaster_last_words_removed(self):
         """검성의 동포 파괴 시 새로운 검성의 동포가 소환되고 유언이 제거되는지 검증합니다."""
         builder = GameScenarioBuilder("player1", "player2")
+        # 수동 데이터베이스를 강제로 로드하여 버그를 재현합니다.
+        from src.common import card_data
+        card_data.load_card_databases('card_database/4_manual_database/card_database_manual.json')
+        
         builder.set_active_player("player1")
 
         # 검성의 동포 카드를 필드에 배치합니다.

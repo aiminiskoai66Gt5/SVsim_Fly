@@ -490,8 +490,36 @@ def _resolve_effect_references_recursive(effect: Effect, card_id: str, global_ca
     if not isinstance(effect, Effect):
         return
 
+    new_processes = []
     for process in effect.processes:
         _resolve_process_references(process, card_id, global_card_db)
+        new_processes.append(process)
+        
+        # SUMMON 프로세스의 value 리스트 내에 'remove Last Words' 지시어가 포함된 경우의 처리입니다.
+        process_value = getattr(process, "value", None)
+        process_type = getattr(process, "process", None)
+        if process_type == ProcessType.SUMMON and isinstance(process_value, list):
+            has_remove_lw = False
+            cleaned_value = []
+            for item in process_value:
+                if isinstance(item, str) and "remove Last Words" in item:
+                    has_remove_lw = True
+                else:
+                    cleaned_value.append(item)
+            
+            if has_remove_lw:
+                process.value = cleaned_value[0] if len(cleaned_value) == 1 else cleaned_value
+                process.attributes["value"] = process.value
+                
+                from src.common.effect import Process
+                remove_proc = Process(
+                    process=ProcessType.REMOVE_KEYWORD,
+                    target=TargetType.SUMMONED_FOLLOWERS,
+                    value=EffectType.LAST_WORDS
+                )
+                new_processes.append(remove_proc)
+
+    effect.processes = new_processes
 
     choices = getattr(effect, "choices", None)
     if choices:
