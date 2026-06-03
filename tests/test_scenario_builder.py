@@ -1114,6 +1114,28 @@ class TestScenarioBuilderCore(unittest.TestCase):
         has_last_words = any(eff.type == EffectType.LAST_WORDS for eff in summoned_card.effects)
         self.assertFalse(has_last_words)
 
+    def test_inspirational_one_bane_in_hand_on_enemy_super_evolve(self):
+        """상대 추종자가 초진화할 때 패의 비탄에 맞서는 자 카드에 필살 능력이 부여되는지 검증합니다."""
+        builder = GameScenarioBuilder("player1", "player2")
+        builder.set_pp("player2", 0, 0)
+        builder.set_sep("player2", 1, 2)
+        
+        # 1. player1의 패에 '비탄에 맞서는 자' 추가
+        grief = builder.add_to_hand("player1", "Inspirational One")
+        
+        # 2. player2의 필드에 '불굴의 파이터' 추가
+        fighter = builder.add_to_field("player2", "Indomitable Fighter")
+        
+        game = builder.build()
+        
+        # 3. player2의 추종자를 초진화시킵니다.
+        game.super_evolve_follower(fighter.card_id, "player2")
+        
+        # 4. 패에 있는 비탄에 맞서는 자 카드에 필살(Bane) 효과가 부여되었는지 검증합니다.
+        has_bane = any(eff.type == EffectType.BANE for eff in grief.effects)
+        self.assertTrue(has_bane)
+
+
 
 
 
