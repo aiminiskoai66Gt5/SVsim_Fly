@@ -1,6 +1,7 @@
 # 역할 정의. 게임의 전체 흐름과 진행 로직을 통합하는 클래스입니다.
 
 from functools import partial
+import random
 from typing import Dict, Any, List, Optional, Union
 from collections import defaultdict
 
@@ -75,14 +76,19 @@ class Game:
 
     def __init__(self, player1_id: str, player2_id: str, p1_deck_data: List[Any] = None, p2_deck_data: List[Any] = None,
                  view: Optional[View] = None,
-                 decider: Optional[Union[Decider, Dict[str, Decider]]] = None):
+                 decider: Optional[Union[Decider, Dict[str, Decider]]] = None,
+                 rng: Optional[random.Random] = None):
         """Game 클래스의 생성자입니다. 플레이어별 외부 주입 덱이 있으면 이를 기반으로 구성합니다.
 
         view - presentation only (``update()``). Defaults to the tkinter GameGUI.
         decider - one Decider for both players, or a dict player_id -> Decider.
                   Defaults to a HumanDecider bound to the view's dialogs.
+        rng - the one random.Random every engine-side random choice goes through.
+              Defaults to a fresh unseeded instance.
         """
+        self.rng = rng if rng is not None else random.Random()
         self.game_state_manager = GameStateManager()
+        self.game_state_manager.rng = self.rng
         self.game_state_manager.game = self  # Game 인스턴스를 전달합니다.
         self.event_manager = EventManager()
         self.listener_ref_counts = defaultdict(int)

@@ -1,6 +1,5 @@
 # 역할 정의. 카드 효과를 해석하고 처리하는 클래스입니다.
 
-import random
 from src.common import text as T
 import logging
 
@@ -231,11 +230,11 @@ class EffectProcessor:
                 faith_val = getattr(player, "faith", 0)
                 if faith_val == 0:
                     faith_val = 5
-                v1 = random.randint(0, faith_val)
-                v2 = random.randint(0, faith_val - v1)
+                v1 = game_state_manager.rng.randint(0, faith_val)
+                v2 = game_state_manager.rng.randint(0, faith_val - v1)
                 v3 = faith_val - v1 - v2
                 vals = [v1, v2, v3]
-                random.shuffle(vals)
+                game_state_manager.rng.shuffle(vals)
                 caster_card.x_val = vals[0]
                 caster_card.y_val = vals[1]
                 caster_card.z_val = vals[2]
@@ -505,7 +504,7 @@ class EffectProcessor:
         selectable_cards = [c for c in hand_cards if c.card_id != caster_card.card_id]
         if not selectable_cards:
             return []
-        selected_card = random.choice(selectable_cards)
+        selected_card = game_state_manager.rng.choice(selectable_cards)
         return [selected_card]
 
     def _get_target_opponent_follower_random(self, caster_card: Card, game_state_manager: 'GameStateManager') -> List[Any]:
@@ -517,7 +516,7 @@ class EffectProcessor:
         if not opponent_followers:
             return []
 
-        random.shuffle(opponent_followers)
+        game_state_manager.rng.shuffle(opponent_followers)
         count = 1
         if hasattr(self, 'current_effect') and self.current_effect:
             count = getattr(self.current_effect, 'target_count', 1)
@@ -538,7 +537,7 @@ class EffectProcessor:
         if not max_attack_followers: return []
 
         # 가장 공격력이 높은 추종자 중 랜덤 선택은 유지합니다.
-        random.shuffle(max_attack_followers)
+        game_state_manager.rng.shuffle(max_attack_followers)
         selected_card = max_attack_followers.pop()
 
         return [selected_card]
@@ -571,8 +570,7 @@ class EffectProcessor:
         candidates = [c for c in ally_cards if c.get_type() == CardType.FOLLOWER and c.card_id != caster_card.card_id]
         if not candidates:
             return []
-        import random
-        return [random.choice(candidates)]
+        return [game_state_manager.rng.choice(candidates)]
 
     def _get_target_all_opponents(self, caster_card: Card, game_state_manager: 'GameStateManager') -> List[Any]:
         """대상 - 상대 전체"""
@@ -684,7 +682,7 @@ class EffectProcessor:
                 opponent_deck = game_state_manager.get_cards_in_zone(opponent_id, Zone.DECK)
                 count = min(5, len(opponent_deck))
                 if count > 0:
-                    chosen_cards = random.sample(opponent_deck, count)
+                    chosen_cards = game_state_manager.rng.sample(opponent_deck, count)
                     value = [c.card_data for c in chosen_cards]
                 else:
                     return
@@ -962,7 +960,7 @@ class EffectProcessor:
         for card_data_item in value:
             card_data_to_add = game_state_manager.create_card_instance(card_data_item, target_id)
             replaced_deck_list.append(card_data_to_add)
-        random.shuffle(replaced_deck_list)
+        game_state_manager.rng.shuffle(replaced_deck_list)
         replaced_deck = Deck(replaced_deck_list)
         target.deck = replaced_deck
         print(f"[LOG] 처리 내용: 덱 교체, 타겟: {target.player_id}, 덱 사이즈: {len(replaced_deck)}")
@@ -1050,7 +1048,7 @@ class EffectProcessor:
                 target.activated_abilities = set()
             unactivated = [(idx, eff) for idx, eff in spell_effects if idx not in target.activated_abilities]
             if unactivated:
-                selected_idx, selected_eff = random.choice(unactivated)
+                selected_idx, selected_eff = game_state_manager.rng.choice(unactivated)
                 target.activated_abilities.add(selected_idx)
                 self.resolve_effect(selected_eff, target.card_id, game_state_manager, None)
                 print(f"[LOG] Slaus 효과 발동 - 인덱스 {selected_idx} 효과 실행.")
@@ -1106,11 +1104,10 @@ class EffectProcessor:
         elif isinstance(target, Player):
             count = effect_data.value if isinstance(effect_data.value, int) else 1
             player_id = target.player_id
-            import random
             for _ in range(count):
                 hand_ids = game_state_manager.get_card_ids_in_zone(player_id, Zone.HAND)
                 if hand_ids:
-                    chosen_id = random.choice(hand_ids)
+                    chosen_id = game_state_manager.rng.choice(hand_ids)
                     game.discard_card(player_id, chosen_id)
                 else:
                     break
@@ -1458,8 +1455,7 @@ class EffectProcessor:
 
         max_found_cost = max(c.current_cost for c in candidates)
         best_candidates = [c for c in candidates if c.current_cost == max_found_cost]
-        import random
-        selected_card = random.choice(best_candidates)
+        selected_card = game_state_manager.rng.choice(best_candidates)
 
         player.graveyard._cards.remove(selected_card)
         game_state_manager.add_card(selected_card, Zone.FIELD, player.player_id)
@@ -1503,7 +1499,7 @@ class EffectProcessor:
                 opponent_id = "player2" if owner_id == "player1" else "player1"
                 opponent_deck = game_state_manager.get_cards_in_zone(opponent_id, Zone.DECK)
                 if opponent_deck:
-                    chosen_card = random.choice(opponent_deck)
+                    chosen_card = game_state_manager.rng.choice(opponent_deck)
                     new_card_data = chosen_card.card_data
                 else:
                     print("[WARNING] Opponent deck is empty. Cannot transform.")
@@ -1512,7 +1508,7 @@ class EffectProcessor:
                 own_deck = game_state_manager.get_cards_in_zone(owner_id, Zone.DECK)
                 followers = [c for c in own_deck if c.get_type() == CardType.FOLLOWER]
                 if followers:
-                    chosen_card = random.choice(followers)
+                    chosen_card = game_state_manager.rng.choice(followers)
                     new_card_data = chosen_card.card_data
                 else:
                     print("[WARNING] Own deck has no followers. Cannot transform.")
@@ -1629,7 +1625,7 @@ class EffectProcessor:
         candidates = [c for c in ally_cards if c.get_type() == CardType.FOLLOWER and c.card_id != caster_card.card_id and not c.is_evolved]
         if not candidates:
             return []
-        return [random.choice(candidates)]
+        return [game_state_manager.rng.choice(candidates)]
 
     def _get_target_ally_follower_random_super_evolved(self, caster_card: Card, game_state_manager: 'GameStateManager') -> List[Any]:
         """아군 초진화 추종자 중 임의의 대상을 반환합니다."""
@@ -1638,7 +1634,7 @@ class EffectProcessor:
         candidates = [c for c in ally_cards if c.get_type() == CardType.FOLLOWER and c.is_super_evolved]
         if not candidates:
             return []
-        return [random.choice(candidates)]
+        return [game_state_manager.rng.choice(candidates)]
 
     def _get_target_summoned_followers(self, caster_card: Card, game_state_manager: 'GameStateManager') -> List[Any]:
         """방금 소환된 아군 추종자들을 반환합니다."""

@@ -11,9 +11,9 @@ class Deck:
         self._cards = cards
         self.shuffle()
 
-    def shuffle(self):
-        """덱의 카드 순서를 무작위로 섞습니다."""
-        random.shuffle(self._cards)
+    def shuffle(self, rng: Optional[random.Random] = None):
+        """Shuffle in place with ``rng`` (falls back to the global random module)."""
+        (rng or random).shuffle(self._cards)
         print(f"[LOG] 덱이 셔플되었습니다. 현재 덱 사이즈: {len(self._cards)}")
 
     def remove_card(self, card_id: str) -> bool:

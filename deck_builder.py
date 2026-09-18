@@ -145,8 +145,13 @@ def validate_deck_rules(deck_cards):
     return True
 
 
-def generate_random_deck(class_type, all_cards):
-    """지정된 직업과 Rotation 제약을 충족하는 무작위 덱을 생성합니다."""
+def generate_random_deck(class_type, all_cards, rng=None):
+    """지정된 직업과 Rotation 제약을 충족하는 무작위 덱을 생성합니다.
+
+    rng - random.Random to draw from (defaults to the global random module).
+    """
+    import random as _random
+    rng = rng or _random
     # 덱 구성에 필요한 카드 필터를 진행합니다.
     filtered = filter_cards_by_rules("Rotation", class_type, all_cards)
     
@@ -157,13 +162,12 @@ def generate_random_deck(class_type, all_cards):
     
     def add_cards_from_pool(pool, target_total):
         """지정된 풀에서 target_total 장이 될 때까지 카드를 임의로 1에서 3장씩 추가합니다."""
-        import random
         if not pool:
             return 0
             
         current_added = 0
         shuffled_pool = list(pool)
-        random.shuffle(shuffled_pool)
+        rng.shuffle(shuffled_pool)
         
         # 1차 시도로 카드 종류를 순회하며 1장에서 3장을 추가합니다.
         for card in shuffled_pool:
@@ -175,7 +179,7 @@ def generate_random_deck(class_type, all_cards):
             if max_add <= 0:
                 continue
             
-            add_num = random.randint(1, max_add)
+            add_num = rng.randint(1, max_add)
             deck_counts[card_id_str] = deck_counts.get(card_id_str, 0) + add_num
             current_added += add_num
             
@@ -214,8 +218,7 @@ def generate_random_deck(class_type, all_cards):
         if card_obj:
             deck_list.extend([card_obj] * count)
             
-    import random
-    random.shuffle(deck_list)
+    rng.shuffle(deck_list)
     return deck_list
 
 

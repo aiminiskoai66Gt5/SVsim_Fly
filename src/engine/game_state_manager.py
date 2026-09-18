@@ -1,5 +1,6 @@
 # 역할 정의. 게임의 전반적인 상태를 추적하고 조작하는 클래스입니다.
 
+import random
 from typing import List, Dict, Any, Optional
 
 from src.common.enums import GamePhase, CardType, Zone, EffectType, TargetType
@@ -24,6 +25,7 @@ class GameStateManager:
         self.game = None  # Game 인스턴스를 참조하기 위한 필드를 추가합니다.
         self.recently_summoned_cards = []  # 최근 소환된 카드 객체 목록입니다.
         self.is_awaiting_choice: bool = False
+        self.rng = random.Random()  # Single source of randomness; Game injects the shared instance.
         self.pending_choice: Optional[Effect] = None
         self.player_awaiting_choice: Optional[str] = None
 
@@ -144,7 +146,7 @@ class GameStateManager:
     def shuffle_deck(self, player_id: str):
         """지정 플레이어의 덱을 셔플합니다."""
         player = self.players[player_id]
-        player.deck.shuffle()
+        player.deck.shuffle(self.rng)
 
     def start_turn(self, player_id: str):
         """지정된 플레이어의 턴을 시작합니다."""

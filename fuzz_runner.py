@@ -24,11 +24,13 @@ class MockGUI(View, Decider):
 
     Implements both engine interfaces (View and Decider). The legacy GUI method
     names are kept as aliases. All randomness goes through the global ``random``
-    module in the same call order as before, so seeded runs are unchanged.
+    module (or the injected ``rng``) in the same call order as before, so seeded
+    runs are unchanged.
     """
 
-    def __init__(self, game_state_manager: Any = None):
+    def __init__(self, game_state_manager: Any = None, rng: Optional[random.Random] = None):
         self.game_state_manager = game_state_manager
+        self.rng = rng if rng is not None else random.Random()
 
     # --- View ---
     def update(self):
@@ -36,29 +38,29 @@ class MockGUI(View, Decider):
 
     # --- Decider ---
     def choose_action(self, game: Any, player_id: str, legal_actions: List[Dict[str, Any]]) -> Dict[str, Any]:
-        return random.choice(legal_actions)
+        return self.rng.choice(legal_actions)
 
     def choose_option(self, prompt: str, choices: Dict[str, Any]) -> Any:
         if not choices:
             return None
-        selected_key = random.choice(list(choices.keys()))
+        selected_key = self.rng.choice(list(choices.keys()))
         return choices[selected_key]
 
     def choose_mulligan(self, player_id: str, hand: List[Card]) -> List[str]:
         if not hand:
             return []
-        num_to_replace = random.randint(0, len(hand))
-        selected_cards = random.sample(hand, num_to_replace)
+        num_to_replace = self.rng.randint(0, len(hand))
+        selected_cards = self.rng.sample(hand, num_to_replace)
         return [c.card_id for c in selected_cards]
 
     def choose_discard(self, player_id: str, hand: List[Card], count: int) -> List[str]:
         card_ids = [c.card_id for c in hand]
         num_to_discard = min(count, len(card_ids))
-        return random.sample(card_ids, num_to_discard)
+        return self.rng.sample(card_ids, num_to_discard)
 
     def choose_fuse(self, player_id: str, base_card: Card, candidates: List[Card]) -> List[str]:
-        num_to_fuse = random.randint(0, len(candidates))
-        return [c.card_id for c in random.sample(candidates, num_to_fuse)]
+        num_to_fuse = self.rng.randint(0, len(candidates))
+        return [c.card_id for c in self.rng.sample(candidates, num_to_fuse)]
 
     # --- legacy GUI-style aliases ---
     get_user_choice = choose_option
@@ -255,8 +257,12 @@ def validate_game_state_invariants(game: Game):
                                 raise AssertionError(f"직접소환 조건을 만족한 카드 {card.get_display_name()} (ID {card.card_id})가 전장 자리가 존재함에도 필드로 진입하지 못했습니다.")
 
 
-def run_fuzzing(runs: int = 1, max_turns: int = 20) -> Tuple[bool, Optional[Exception]]:
-    """지정된 횟수만큼 게임 세션을 반복 생성하여 퍼징 테스트를 수행합니다. 오류 발생 시 예외 객체를 반환합니다."""
+def run_fuzzing(runs: int = 1, max_turns: int = 20, seed: Optional[int] = None) -> Tuple[bool, Optional[Exception]]:
+    """지정된 횟수만큼 게임 세션을 반복 생성하여 퍼징 테스트를 수행합니다. 오류 발생 시 예외 객체를 반환합니다.
+
+    seed - base seed; game ``i`` uses ``random.Random(seed + i)`` for everything
+           (deck generation, engine, MockGUI). None keeps the old unseeded behaviour.
+    """
     card_data.load_card_databases('card_database/3_parsed_database/card_database_parsed.json')
     all_cards = {**card_data.BASIC_CARD_DATABASE, **card_data.LEGENDS_RISE_CARD_DATABASE}
     
@@ -281,18 +287,22 @@ def run_fuzzing(runs: int = 1, max_turns: int = 20) -> Tuple[bool, Optional[Exce
     try:
         for run_idx in range(runs):
             game = None
+            game_seed = None if seed is None else seed + run_idx
+            rng = random if seed is None else random.Random(game_seed)
+            print(f"[FUZZ] run {run_idx} seed={game_seed}")
             try:
                 # 무작위로 직업을 선택하여 덱을 생성합니다.
                 class_types = [c for c in ClassType if c != ClassType.NEUTRAL]
-                p1_class = random.choice(class_types)
-                p2_class = random.choice(class_types)
+                p1_class = rng.choice(class_types)
+                p2_class = rng.choice(class_types)
                 
-                p1_deck = generate_random_deck(p1_class, all_cards)
-                p2_deck = generate_random_deck(p2_class, all_cards)
+                p1_deck = generate_random_deck(p1_class, all_cards, rng=rng)
+                p2_deck = generate_random_deck(p2_class, all_cards, rng=rng)
                 
                 # 게임 클래스 초기화 시 생성된 덱 데이터를 주입합니다.
-                mock = MockGUI()
-                game = Game("player1", "player2", p1_deck, p2_deck, view=mock, decider=mock)
+                mock = MockGUI(rng=rng)
+                game = Game("player1", "player2", p1_deck, p2_deck, view=mock, decider=mock,
+                            rng=rng if seed is not None else None)
                 mock.game_state_manager = game.game_state_manager
                 
                 current_player = "player1"
@@ -472,9 +482,12 @@ if __name__ == "__main__":
     config = load_agent_config(config_path)
     run_count = config.get("parameters", {}).get("run_count", 10)
     max_turns = config.get("parameters", {}).get("max_turns", 20)
+    seed = config.get("parameters", {}).get("seed")
+    if len(sys.argv) > 1 and sys.argv[1].startswith("--seed="):
+        seed = int(sys.argv[1].split("=", 1)[1])
     
-    print(f"퍼징 테스트를 {run_count}회 시작합니다.")
-    success, error = run_fuzzing(run_count, max_turns)
+    print(f"퍼징 테스트를 {run_count}회 시작합니다. (seed={seed})")
+    success, error = run_fuzzing(run_count, max_turns, seed=seed)
     if success:
         print("퍼징 테스트가 오류 없이 완료되었습니다.")
         sys.exit(0)

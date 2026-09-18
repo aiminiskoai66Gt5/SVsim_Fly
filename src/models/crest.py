@@ -36,7 +36,6 @@ class MjerrabaineCrest(Crest):
             if event.player_id != self.owner_id:
                 return
             
-            import random
             from src.common.enums import Zone, CardType
             from src.common.event import DestroyedOnFieldEvent
             
@@ -56,7 +55,7 @@ class MjerrabaineCrest(Crest):
                 opponent_field = game.game_state_manager.get_cards_in_zone(opponent_id, Zone.FIELD)
                 opponent_followers = [c for c in opponent_field if c.get_type() == CardType.FOLLOWER]
                 if opponent_followers:
-                    target_follower = random.choice(opponent_followers)
+                    target_follower = game.game_state_manager.rng.choice(opponent_followers)
                     target_follower.take_damage(2)
                     if target_follower.current_defense <= 0:
                         game.game_state_manager.move_card(target_follower.card_id, Zone.FIELD, Zone.GRAVEYARD)
