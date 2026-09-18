@@ -82,7 +82,8 @@ class Game:
 
         view - presentation only (``update()``). Defaults to the tkinter GameGUI.
         decider - one Decider for both players, or a dict player_id -> Decider.
-                  Defaults to a HumanDecider bound to the view's dialogs.
+                  Defaults to a HumanDecider bound to the view's dialogs; a None
+                  entry in the dict also means "human on this view".
         rng - the one random.Random every engine-side random choice goes through.
               Defaults to a fresh unseeded instance.
         """
@@ -106,7 +107,8 @@ class Game:
             from svai.deciders import HumanDecider
             decider = HumanDecider(view)
         if isinstance(decider, dict):
-            self.deciders = dict(decider)
+            from svai.deciders import HumanDecider
+            self.deciders = {pid: (d if d is not None else HumanDecider(view)) for pid, d in decider.items()}
         else:
             self.deciders = {player1_id: decider, player2_id: decider}
         self.destroyed_this_turn = []
@@ -779,6 +781,28 @@ class Game:
         print(f"[LOG] {player_id} 턴 종료. {opponent_id}의 턴으로 전환.")
         self._start_turn(opponent_id)
         self.view.update()
+
+    # --- cloning ---------------------------------------------------------
+    def clone(self, deciders: Optional[Dict[str, Decider]] = None, rng_seed: Optional[int] = None) -> "Game":
+        """Deep copy of the whole game state for look-ahead search.
+
+        The view is replaced by a NullView and the deciders by ``deciders``
+        (default: the originals are shared, not copied) so that simulating on the
+        copy never touches a GUI. With ``rng_seed`` the copy's RNG is reseeded, so
+        a search cannot read the future of the real game's random stream.
+        """
+        import copy
+        from svai.interfaces import NullView
+        memo = {id(self.view): NullView(), id(self.gui): NullView()}
+        for decider in self.deciders.values():
+            memo[id(decider)] = decider  # shared by default; replaced below if requested
+        new = copy.deepcopy(self, memo)
+        if deciders is not None:
+            new.deciders = dict(deciders)
+        if rng_seed is not None:
+            new.rng = random.Random(rng_seed)
+            new.game_state_manager.rng = new.rng
+        return new
 
     # --- game over -------------------------------------------------------
     DRAW = "draw"

@@ -6,6 +6,7 @@ from src.engine.main_game_logic import Game
 from src.models.player import Player
 from src.common import card_data
 from svai.actions import apply_action, END_TURN
+from svai.deciders import HumanDecider
 from src.common import text as T
 import os
 import json
@@ -80,18 +81,26 @@ def select_decks_gui():
             messagebox.showwarning(T.DECK_LOAD_FAILED_TITLE, T.DECK_LOAD_FAILED.format(error=str(e)))
             return None
 
-    result = {"p1": None, "p2": None}
+    ttk.Label(frame, text=T.OPPONENT_LABEL, style="Header.TLabel").pack(anchor=tk.W, pady=5)
+    opp_var = tk.StringVar(value=T.OPPONENT_HUMAN)
+    opp_combo = ttk.Combobox(frame, textvariable=opp_var, values=[T.OPPONENT_HUMAN, T.OPPONENT_GREEDY],
+                             state="readonly", width=30)
+    opp_combo.pack(fill=tk.X, pady=5)
+
+    result = {"p1": None, "p2": None, "opponent": "human"}
 
     def start_game():
         """선택한 덱 정보로 게임을 시작합니다."""
         result["p1"] = load_deck_file_with_gui(p1_var.get())
         result["p2"] = load_deck_file_with_gui(p2_var.get())
+        result["opponent"] = "greedy" if opp_var.get() == T.OPPONENT_GREEDY else "human"
         root.destroy()
 
     def start_fallback():
         """기본 덱 설정을 적용하여 시작합니다."""
         result["p1"] = None
         result["p2"] = None
+        result["opponent"] = "greedy" if opp_var.get() == T.OPPONENT_GREEDY else "human"
         root.destroy()
 
     btn_frame = ttk.Frame(frame)
@@ -103,8 +112,9 @@ def select_decks_gui():
     fallback_btn = tk.Button(btn_frame, text=T.DECK_START_DEFAULT, command=start_fallback, bg=bg_panel, fg=fg_light, font=("Microsoft JhengHei", 10), relief=tk.FLAT, padx=10)
     fallback_btn.pack(side=tk.RIGHT, padx=5)
 
+    root.geometry("400x330")
     root.mainloop()
-    return result["p1"], result["p2"]
+    return result["p1"], result["p2"], result["opponent"]
 
 
 # 게임 실행 예시입니다.
@@ -112,22 +122,41 @@ if __name__ == "__main__":
     card_data.load_card_databases('card_database/3_parsed_database/card_database_parsed.json')
     from svai.config import apply_display_config
     apply_display_config()  # card names / text language from config.toml
-    p1_deck, p2_deck = select_decks_gui()
-    # Default view is the tkinter GameGUI and the default decider is a HumanDecider
-    # bound to its dialogs, i.e. human vs human exactly as before.
-    game = Game("player1", "player2", p1_deck, p2_deck)
+    p1_deck, p2_deck, opponent = select_decks_gui()
+    if opponent == "greedy":
+        # Human (player1, GUI dialogs) vs GreedyAgent (player2). The agent's turn runs
+        # action by action through the same loop; the board redraws after each action.
+        from ui.gui import GameGUI
+        from svai.agents.greedy_agent import GreedyAgent
+        from svai.deciders import AgentDecider, HumanDecider
+        from svai.actions import legal_actions
+        game = Game("player1", "player2", p1_deck, p2_deck,
+                    decider={"player1": None, "player2": AgentDecider(GreedyAgent())})
+    else:
+        # Default view is the tkinter GameGUI and the default decider is a HumanDecider
+        # bound to its dialogs, i.e. human vs human exactly as before.
+        game = Game("player1", "player2", p1_deck, p2_deck)
     current_player = "player1"
 
     for turn_num in range(1, 21):  # 20턴까지 진행하는 예시입니다.
 
         while True:
+            if game.is_game_over():
+                break
             decider = game.decider_for(current_player)
-            # The human menu flow lives in svai.deciders.HumanDecider.choose_action.
-            action = decider.choose_action(game, current_player, None)
+            # The human menu flow lives in svai.deciders.HumanDecider.choose_action;
+            # an AgentDecider needs the legal-action list instead.
+            legal = None if isinstance(decider, HumanDecider) else legal_actions(game, current_player)
+            action = decider.choose_action(game, current_player, legal)
             apply_action(game, current_player, action)
             decider.notify_action_applied(game, current_player, action)
+            game.view.update()
             if action["type"] == END_TURN:
                 break  # 턴 종료 후 다음 플레이어로 넘어갑니다.
+        if game.is_game_over():
+            winner = game.winner()
+            game.gui.get_user_choice(T.GAME_OVER.format(winner=winner), {T.MENU_OK: None})
+            break
 
         # 턴 플레이어를 전환합니다.
         current_player = game.opponent_id[current_player]

@@ -70,8 +70,12 @@ DECK_DEFAULT = "預設範例牌組"
 DECK_LOAD_FAILED_TITLE = "牌組載入失敗"
 DECK_LOAD_FAILED = "牌組檔案載入失敗，改用預設牌組。{error}"
 DECK_START = "開始對戰"
+OPPONENT_LABEL = "玩家 2 由誰操作"
+OPPONENT_HUMAN = "人類（本機雙人）"
+OPPONENT_GREEDY = "電腦：GreedyAgent"
 DECK_START_DEFAULT = "用預設牌組開始"
 GAME_OVER_DEMO = "--- 範例對局結束 ---"
+GAME_OVER = "對局結束：{winner} 獲勝"
 
 # Keyword names as the official site shows them (shadowverse-wb.com, lang=cht, 2026-09-19).
 # Keys are EffectType member names; unlisted members fall back to the member name.

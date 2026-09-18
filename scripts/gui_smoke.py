@@ -5,7 +5,8 @@ real widgets: default decks -> confirm mulligans -> each turn try to play the
 first playable card once, then end the turn -> close the final dialog.
 Needs a display (on Linux: ``xvfb-run python scripts/gui_smoke.py``).
 Exit code 0 means main.py ran to its normal end without an exception.
-Options: --big (huge window), --seed N (seed the global RNG), --trace FILE (dump the clicked labels).
+Options: --big (huge window), --seed N (seed the global RNG), --trace FILE (dump the clicked labels),
+--greedy (player 2 is the GreedyAgent).
 """
 
 import os
@@ -20,6 +21,7 @@ os.chdir(ROOT)
 from src.common import text as T  # noqa: E402
 
 BIG_WINDOW = "--big" in sys.argv
+GREEDY = "--greedy" in sys.argv
 stats = {"clicks": 0, "prompts": {}, "tried_play": False}
 
 
@@ -48,7 +50,17 @@ def is_shown(widget):
     return True
 
 
+def _select_greedy(root):
+    """In the deck dialog, pick the GreedyAgent opponent before starting (--greedy)."""
+    for w in all_widgets(root):
+        if isinstance(w, ttk.Combobox) and T.OPPONENT_GREEDY in w.cget("values"):
+            w.set(T.OPPONENT_GREEDY)
+
+
 def poll(root):
+    if GREEDY and not stats.get("greedy_set"):
+        _select_greedy(root)
+        stats["greedy_set"] = True
     stats["polls"] = stats.get("polls", 0) + 1
     if BIG_WINDOW and id(root) not in stats.setdefault("resized", set()) and root.winfo_width() >= 1200:
         stats["resized"].add(id(root))
