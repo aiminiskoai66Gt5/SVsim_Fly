@@ -1093,7 +1093,7 @@ class EffectProcessor:
             print(f"[LOG] {player_id}의 패에 융합할 수 있는 카드가 존재하지 않습니다.")
             return
 
-        material_ids = game.gui.get_fuse_choices(player_id, target, fusible_cards)
+        material_ids = game.decider_for(player_id).choose_fuse(player_id, target, fusible_cards)
         if material_ids:
             game.fuse_cards(player_id, target.card_id, material_ids)
 

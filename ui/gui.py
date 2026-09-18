@@ -4,13 +4,15 @@ import tkinter as tk
 from tkinter import ttk
 from typing import TYPE_CHECKING
 
+from svai.interfaces import View
+
 if TYPE_CHECKING:
     from src.engine.game_state_manager import GameStateManager
     from src.models.card import Card
     from src.common.enums import CardType
 
 
-class GameGUI:
+class GameGUI(View):
     """게임 상태를 Tkinter 기반 창에 시각적으로 표현하는 GUI 클래스입니다."""
     def __init__(self, game_state_manager: 'GameStateManager'):
         """GameGUI 클래스의 생성자입니다."""

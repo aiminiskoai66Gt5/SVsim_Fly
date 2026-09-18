@@ -1,7 +1,7 @@
 # 역할 정의. 게임의 전체 흐름과 진행 로직을 통합하는 클래스입니다.
 
 from functools import partial
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional, Union
 from collections import defaultdict
 
 from src.models.card import Card
@@ -42,7 +42,11 @@ def validate_fuse_material(material_card: Card, fuse_condition: str) -> bool:
         return name in ["Ominous Artifact 1", "Ominous Artifact 3"]
         
     return False
-from ui.gui import GameGUI
+from svai.interfaces import View, Decider
+
+# Legacy override hook: set to a class to replace the default tkinter GUI without
+# importing tkinter. Prefer passing ``view=`` / ``decider=`` to Game instead.
+GameGUI = None
 from src.common.effect import Effect
 from src.common.listener import Listener
 from src.common.event import (
@@ -68,8 +72,15 @@ class Game:
     """게임 전체 흐름을 관리하는 클래스입니다.
     주요 역할 - 플레이어의 요청 처리, 게임 보드의 이벤트에 따른 효과 처리, 효과 처리로 인한 변화를 게임 보드에 적용합니다."""
 
-    def __init__(self, player1_id: str, player2_id: str, p1_deck_data: List[Any] = None, p2_deck_data: List[Any] = None):
-        """Game 클래스의 생성자입니다. 플레이어별 외부 주입 덱이 있으면 이를 기반으로 구성합니다."""
+    def __init__(self, player1_id: str, player2_id: str, p1_deck_data: List[Any] = None, p2_deck_data: List[Any] = None,
+                 view: Optional[View] = None,
+                 decider: Optional[Union[Decider, Dict[str, Decider]]] = None):
+        """Game 클래스의 생성자입니다. 플레이어별 외부 주입 덱이 있으면 이를 기반으로 구성합니다.
+
+        view - presentation only (``update()``). Defaults to the tkinter GameGUI.
+        decider - one Decider for both players, or a dict player_id -> Decider.
+                  Defaults to a HumanDecider bound to the view's dialogs.
+        """
         self.game_state_manager = GameStateManager()
         self.game_state_manager.game = self  # Game 인스턴스를 전달합니다.
         self.event_manager = EventManager()
@@ -77,7 +88,20 @@ class Game:
         self.effect_processor = EffectProcessor(self.event_manager)
         self.rule_engine = RuleEngine(self.game_state_manager)
         self.opponent_id = {player1_id: player2_id, player2_id: player1_id}
-        self.gui = GameGUI(self.game_state_manager)
+        if view is None:
+            gui_class = GameGUI
+            if gui_class is None:
+                from ui.gui import GameGUI as gui_class  # Imported lazily so headless runs never need tkinter.
+            view = gui_class(self.game_state_manager)
+        self.view = view
+        self.gui = view  # Backwards-compatible alias. Engine code must use self.view / self.decider_for().
+        if decider is None:
+            from svai.deciders import HumanDecider
+            decider = HumanDecider(view)
+        if isinstance(decider, dict):
+            self.deciders = dict(decider)
+        else:
+            self.deciders = {player1_id: decider, player2_id: decider}
         self.destroyed_this_turn = []
 
         self.game_state_manager.players[player1_id] = Player(player1_id, self.event_manager)
@@ -90,11 +114,17 @@ class Game:
         self._initialize_decks(player1_id, player2_id, p1_deck_data, p2_deck_data)
         self._initial_draw(player1_id, player2_id)
         self._start_turn(player1_id)
-        self.gui.update()
+        self.view.update()
 
-    def request_user_choice(self, prompt: str, choices: Dict[str, Any]) -> Any:
+    def decider_for(self, player_id: Optional[str] = None) -> Decider:
+        """Return the Decider of ``player_id`` (defaults to the turn player)."""
+        if player_id is None:
+            player_id = self.game_state_manager.current_turn_player_id
+        return self.deciders[player_id]
+
+    def request_user_choice(self, prompt: str, choices: Dict[str, Any], player_id: Optional[str] = None) -> Any:
         """사용자에게 선택을 요청하고 그 결과를 반환합니다."""
-        return self.gui.get_user_choice(prompt, choices)
+        return self.decider_for(player_id).choose_option(prompt, choices)
 
     def process_player_choice(self):
         """플레이어의 모드 선택을 처리합니다."""
@@ -110,7 +140,7 @@ class Game:
 
         # GUI를 통해 플레이어의 선택을 받습니다.
         prompt = f"{player_id}, 효과를 선택하세요:"
-        chosen_index_str = self.gui.get_user_choice(prompt, choices)
+        chosen_index_str = self.decider_for(player_id).choose_option(prompt, choices)
 
         if chosen_index_str is not None and chosen_index_str != '':
             chosen_index = int(chosen_index_str)
@@ -127,7 +157,7 @@ class Game:
             caster_id = pending_effect.get('caster_id') 
             self.effect_processor.resolve_effect(chosen_effect, caster_id, self.game_state_manager, None)
             
-            self.gui.update()
+            self.view.update()
 
     def resolve_effects_type(self, caster_card_id: str, effect_type: EffectType, target_id: str = None):
         """특정 카드에 대해 지정된 타입의 모든 효과를 해결합니다."""
@@ -432,7 +462,7 @@ class Game:
         hand_cards_obj = [self.game_state_manager.get_entity_by_id(card_id, Zone.HAND) for card_id in hand]
 
         # 2. GUI를 통해 멀리건할 카드를 선택합니다.
-        cards_to_mulligan_ids = self.gui.get_mulligan_choices(player_id, hand_cards_obj)
+        cards_to_mulligan_ids = self.decider_for(player_id).choose_mulligan(player_id, hand_cards_obj)
 
         # 3. 멀리건할 카드를 식별하여 덱으로 이동시킵니다.
         print(f"[LOG] 멀리건할 카드 ID: {cards_to_mulligan_ids}")  # DEBUG
@@ -509,7 +539,7 @@ class Game:
             self.process_events()
             self._unregister_card_listeners(card)
 
-        self.gui.update()
+        self.view.update()
         return True
 
     def discard_card(self, player_id: str, card_id: str):
@@ -523,7 +553,7 @@ class Game:
         from src.common.event import CardDiscardedEvent
         self.event_manager.publish(CardDiscardedEvent(player_id=player_id, card_id=card_id))
         self.process_events()
-        self.gui.update()
+        self.view.update()
 
     def discard_cards_manually(self, player_id: str, count: int):
         """플레이어가 패에서 수동으로 선택하여 카드를 버립니다."""
@@ -533,7 +563,7 @@ class Game:
             return
 
         # GUI를 통해 버릴 카드를 선택하게 요청합니다.
-        choices_ids = self.gui.get_discard_choices(player_id, hand, count)
+        choices_ids = self.decider_for(player_id).choose_discard(player_id, hand, count)
         for card_id in choices_ids:
             self.discard_card(player_id, card_id)
 
@@ -578,7 +608,7 @@ class Game:
         from src.common.event import FuseDeclaredEvent
         self.event_manager.publish(FuseDeclaredEvent(player_id=player_id, card_id=base_card_id, material_card_ids=material_card_ids))
         self.process_events()
-        self.gui.update()
+        self.view.update()
         return True
 
     def attack_leader(self, attacker_id: str):
@@ -619,7 +649,7 @@ class Game:
         attacker.attack_count_this_turn += 1
         if attacker.attack_count_this_turn >= attacker.max_attack_count:
             attacker.is_engaged = True  # 공격 완료 여부를 표시합니다.
-        self.gui.update()
+        self.view.update()
         return True
 
     def attack_follower(self, attacker_id: str, target_id: str):
@@ -703,7 +733,7 @@ class Game:
             self.event_manager.publish(DestroyedOnFieldEvent(card_id=attacker_id))
             self.process_events()
             self.game_state_manager.move_card(attacker_id, Zone.FIELD, Zone.GRAVEYARD)
-        self.gui.update()
+        self.view.update()
         return True
 
     def end_turn(self, player_id: str):
@@ -726,7 +756,7 @@ class Game:
         self.game_state_manager.current_turn_player_id = opponent_id
         print(f"[LOG] {player_id} 턴 종료. {opponent_id}의 턴으로 전환.")
         self._start_turn(opponent_id)
-        self.gui.update()
+        self.view.update()
 
     def get_opponent_id(self, player_id: str) -> str:
         """상대 플레이어의 ID를 반환합니다."""
@@ -740,7 +770,7 @@ class Game:
         self.event_manager.publish(FollowerEvolvedEvent(card_id=card_id, spend_ep=True))
         self._increase_skybound_art_gauges(player_id)
         self.process_events()
-        self.gui.update()
+        self.view.update()
 
     def super_evolve_follower(self, card_id: str, player_id: str):
         """SEP를 소모하여 추종자를 초진화시킵니다."""
@@ -750,7 +780,7 @@ class Game:
         self.event_manager.publish(FollowerSuperEvolvedEvent(card_id=card_id, spend_sep=True))
         self._increase_skybound_art_gauges(player_id)
         self.process_events()
-        self.gui.update()
+        self.view.update()
 
     def _increase_skybound_art_gauges(self, player_id: str):
         """손패에 있는 오의 및 해방오의 카드 진화 보너스 게이지를 누적 증가시킵니다."""
@@ -793,7 +823,7 @@ class Game:
         self.game_state_manager.engage_card(card_id, player_id)
         self.event_manager.publish(CardEngagedEvent(card_id=card_id))
         self.process_events()
-        self.gui.update()
+        self.view.update()
         return True
 
 

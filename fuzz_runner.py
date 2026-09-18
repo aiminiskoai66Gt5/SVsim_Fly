@@ -14,45 +14,57 @@ from src.models.card import Card
 from src.common.enums import Zone, CardType, EffectType, ClassType
 
 
-class MockGUI:
-    """Tkinter GUI 팝업을 차단하고 콘솔 상에서 무작위 선택을 자동으로 처리하는 모의 GUI 클래스입니다."""
+from svai.interfaces import View, Decider
+from svai.actions import apply_action
+
+
+class MockGUI(View, Decider):
+    """Headless stand-in for the GUI: shows nothing and answers every choice at random.
+
+    Implements both engine interfaces (View and Decider). The legacy GUI method
+    names are kept as aliases. All randomness goes through the global ``random``
+    module in the same call order as before, so seeded runs are unchanged.
+    """
 
     def __init__(self, game_state_manager: Any = None):
-        """MockGUI 인스턴스를 생성하고 게임 상태 매니저를 참조합니다."""
         self.game_state_manager = game_state_manager
 
+    # --- View ---
     def update(self):
-        """GUI 화면 갱신 요청을 시뮬레이션하며 실제로는 아무 동작도 수행하지 않습니다."""
         pass
 
-    def get_user_choice(self, prompt: str, choices: Dict[str, Any]) -> Any:
-        """제시된 무작위 효과나 행동 선택지 중 하나를 무작위로 결정하여 반환합니다."""
+    # --- Decider ---
+    def choose_action(self, game: Any, player_id: str, legal_actions: List[Dict[str, Any]]) -> Dict[str, Any]:
+        return random.choice(legal_actions)
+
+    def choose_option(self, prompt: str, choices: Dict[str, Any]) -> Any:
         if not choices:
             return None
         selected_key = random.choice(list(choices.keys()))
         return choices[selected_key]
 
-    def get_mulligan_choices(self, player_id: str, hand_cards: List[Card]) -> List[str]:
-        """멀리건 단계에서 교체할 손패 카드를 0장부터 최대 전체 손패 수 범위 내에서 무작위로 선택합니다."""
-        if not hand_cards:
+    def choose_mulligan(self, player_id: str, hand: List[Card]) -> List[str]:
+        if not hand:
             return []
-        num_to_replace = random.randint(0, len(hand_cards))
-        selected_cards = random.sample(hand_cards, num_to_replace)
+        num_to_replace = random.randint(0, len(hand))
+        selected_cards = random.sample(hand, num_to_replace)
         return [c.card_id for c in selected_cards]
 
-    def get_discard_choices(self, player_id: str, hand_cards: List[Card], count: int) -> List[str]:
-        """버려야 할 손패 카드를 요구 수량에 맞춰 무작위로 선택하여 반환합니다."""
-        card_ids = [c.card_id for c in hand_cards]
+    def choose_discard(self, player_id: str, hand: List[Card], count: int) -> List[str]:
+        card_ids = [c.card_id for c in hand]
         num_to_discard = min(count, len(card_ids))
         return random.sample(card_ids, num_to_discard)
 
+    def choose_fuse(self, player_id: str, base_card: Card, candidates: List[Card]) -> List[str]:
+        num_to_fuse = random.randint(0, len(candidates))
+        return [c.card_id for c in random.sample(candidates, num_to_fuse)]
 
-# GUI 창이 생성 단계에서부터 팝업되는 것을 막기 위해 GameGUI 클래스를 MockGUI로 원숭이 패치(Monkey Patch)합니다.
-import ui.gui
-ui.gui.GameGUI = MockGUI
+    # --- legacy GUI-style aliases ---
+    get_user_choice = choose_option
+    get_mulligan_choices = choose_mulligan
+    get_discard_choices = choose_discard
+    get_fuse_choices = choose_fuse
 
-import src.engine.main_game_logic as main_game_logic
-main_game_logic.GameGUI = MockGUI
 
 from src.engine.main_game_logic import Game
 import src.common.card_data as card_data
@@ -278,7 +290,9 @@ def run_fuzzing(runs: int = 1, max_turns: int = 20) -> Tuple[bool, Optional[Exce
                 p2_deck = generate_random_deck(p2_class, all_cards)
                 
                 # 게임 클래스 초기화 시 생성된 덱 데이터를 주입합니다.
-                game = Game("player1", "player2", p1_deck, p2_deck)
+                mock = MockGUI()
+                game = Game("player1", "player2", p1_deck, p2_deck, view=mock, decider=mock)
+                mock.game_state_manager = game.game_state_manager
                 
                 current_player = "player1"
                 
@@ -323,24 +337,9 @@ def run_fuzzing(runs: int = 1, max_turns: int = 20) -> Tuple[bool, Optional[Exce
                             break
 
                         # 무작위 액션 하나를 선택하여 진행합니다.
-                        action = random.choice(possible_actions)
-                        
-                        if action["type"] == "PLAY_CARD":
-                            game.play_card(current_player, action["card_id"], action["enhanced_cost"], action["use_extra_pp"])
-                        elif action["type"] == "ATTACK":
-                            target_type = game.game_state_manager.get_type(action["target_id"])
-                            if target_type == CardType.LEADER:
-                                game.attack_leader(action["attacker_id"])
-                            else:
-                                game.attack_follower(action["attacker_id"], action["target_id"])
-                        elif action["type"] == "EVOLVE":
-                            game.evolve_follower(action["card_id"], current_player)
-                        elif action["type"] == "SUPER_EVOLVE":
-                            game.super_evolve_follower(action["card_id"], current_player)
-                        elif action["type"] == "ENGAGE":
-                            game.engage_card(action["card_id"], current_player)
-                        elif action["type"] == "END_TURN":
-                            game.end_turn(current_player)
+                        action = game.decider_for(current_player).choose_action(game, current_player, possible_actions)
+                        apply_action(game, current_player, action)
+                        if action["type"] == "END_TURN":
                             break
 
                         # 액션 실행 직후 한쪽 플레이어 체력이 0 이하가 되면 루프를 조기 종료합니다.
