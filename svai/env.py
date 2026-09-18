@@ -111,7 +111,7 @@ class SVEnv(gym.Env if gym else object):
     metadata = {"render_modes": []}
 
     def __init__(self, opponent: Optional[Agent] = "random", agent_player: str = "player1",
-                 option_agent: Optional[Agent] = None, config: Optional[Dict[str, Any]] = None,
+                 option_agent: Any = None, config: Optional[Dict[str, Any]] = None,
                  quiet: bool = True, deck_mode: Optional[str] = None, deck_files: Optional[List[str]] = None,
                  max_turns: Optional[int] = None):
         self.cfg = config or load_config()
@@ -120,6 +120,7 @@ class SVEnv(gym.Env if gym else object):
         self.agent_player = agent_player
         self.opponent_player = PLAYER_IDS[1] if agent_player == PLAYER_IDS[0] else PLAYER_IDS[0]
         self._opponent_spec = opponent          # "random", an Agent, or None (self-play)
+        # An Agent, or {player_id: Agent} to give each side its own hooks (mulligan, effect options...).
         self.option_agent = option_agent or Agent()
         self.quiet = quiet
         self.deck_mode = deck_mode or env_cfg["deck_mode"]
@@ -179,11 +180,15 @@ class SVEnv(gym.Env if gym else object):
         self.action_log = []
         self.opponent = self._build_opponent()
         d1, d2 = self._make_decks()
-        deciders: Dict[str, Decider] = {self.agent_player: _AgentHooksDecider(self.option_agent)}
+        def hooks_for(pid: str) -> Decider:
+            agent = self.option_agent[pid] if isinstance(self.option_agent, dict) else self.option_agent
+            return _AgentHooksDecider(agent)
+
+        deciders: Dict[str, Decider] = {self.agent_player: hooks_for(self.agent_player)}
         if self.opponent is not None:
             deciders[self.opponent_player] = AgentDecider(self.opponent)
         else:
-            deciders[self.opponent_player] = _AgentHooksDecider(self.option_agent)
+            deciders[self.opponent_player] = hooks_for(self.opponent_player)
         with self._silence():
             self.game = Game(PLAYER_IDS[0], PLAYER_IDS[1], d1, d2, view=NullView(), decider=deciders, rng=self.rng)
         self.current_player = PLAYER_IDS[0]

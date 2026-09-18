@@ -6,3 +6,4 @@ error.log
 venv/
 config.local.toml
 data/
+svsim_fly.bundle
