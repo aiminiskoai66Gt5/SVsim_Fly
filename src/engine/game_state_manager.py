@@ -26,6 +26,7 @@ class GameStateManager:
         self.recently_summoned_cards = []  # 최근 소환된 카드 객체 목록입니다.
         self.is_awaiting_choice: bool = False
         self.rng = random.Random()  # Single source of randomness; Game injects the shared instance.
+        self.deck_out_player_id: Optional[str] = None  # First player who had to draw from an empty deck.
         self.pending_choice: Optional[Effect] = None
         self.player_awaiting_choice: Optional[str] = None
 

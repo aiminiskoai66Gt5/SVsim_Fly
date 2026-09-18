@@ -512,7 +512,9 @@ class Game:
         deck = self.game_state_manager.get_card_ids_in_zone(player_id, Zone.DECK)
         if not deck:
             print(f"[LOG] 게임 종료: {player_id} 덱 아웃!")
-            # 게임 종료 로직을 수행합니다. 패배 처리를 포함합니다.
+            # Drawing from an empty deck loses the game (owner decision, see ENGINE_ISSUES EI-007).
+            if self.game_state_manager.deck_out_player_id is None:
+                self.game_state_manager.deck_out_player_id = player_id
             return
 
         drawn_card_id = deck.pop(0)
@@ -764,6 +766,30 @@ class Game:
         print(f"[LOG] {player_id} 턴 종료. {opponent_id}의 턴으로 전환.")
         self._start_turn(opponent_id)
         self.view.update()
+
+    # --- game over -------------------------------------------------------
+    DRAW = "draw"
+
+    def winner(self) -> Optional[str]:
+        """Return the winner's player id, ``Game.DRAW``, or None while the game is running.
+
+        A leader at 0 or less defense loses; both at once is a draw. A player who
+        had to draw from an empty deck loses (EI-007). Leader defense is checked
+        first. The engine itself never stops: callers must check this.
+        """
+        gsm = self.game_state_manager
+        ids = list(gsm.players.keys())
+        dead = [pid for pid in ids if gsm.players[pid].current_defense <= 0]
+        if len(dead) == len(ids):
+            return self.DRAW
+        if len(dead) == 1:
+            return self.opponent_id[dead[0]]
+        if gsm.deck_out_player_id is not None:
+            return self.opponent_id[gsm.deck_out_player_id]
+        return None
+
+    def is_game_over(self) -> bool:
+        return self.winner() is not None
 
     def get_opponent_id(self, player_id: str) -> str:
         """상대 플레이어의 ID를 반환합니다."""

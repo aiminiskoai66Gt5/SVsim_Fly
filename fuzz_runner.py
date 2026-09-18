@@ -130,78 +130,8 @@ class LogMonitor:
         return None
 
 
-def get_all_possible_actions(game: Game, current_player: str) -> List[Dict[str, Any]]:
-    """현재 활성화된 플레이어가 수행 가능한 모든 유효한 액션을 수집하여 리스트로 반환합니다."""
-    possible_actions = []
-    opponent_id = game.opponent_id[current_player]
-
-    # 1 패에서 카드를 내는 액션을 수집합니다.
-    use_extra_pp_options = [False]
-    if game.has_extra_pp(current_player):
-        use_extra_pp_options.append(True)
-
-    for use_extra_pp in use_extra_pp_options:
-        hand_cards_id, is_validate = game.get_playable_cards_id(current_player, use_extra_pp)
-        if hand_cards_id:
-            for i, card_id in enumerate(hand_cards_id):
-                if is_validate[i]:
-                    current_pp, _ = game.game_state_manager.get_pp_info(current_player)
-                    enhance_effects = [effect for effect in game.game_state_manager.get_card_effects(card_id, EffectType.ENHANCE)]
-                    enhance_costs_for_card = [effect.enhance_cost for effect in enhance_effects if effect.enhance_cost <= current_pp + (1 if use_extra_pp else 0)]
-                    enhanced_cost = max(enhance_costs_for_card) if enhance_costs_for_card else 0
-
-                    possible_actions.append({
-                        "type": "PLAY_CARD",
-                        "card_id": card_id,
-                        "enhanced_cost": enhanced_cost,
-                        "use_extra_pp": use_extra_pp
-                    })
-
-    # 2 필드에 배치된 카드들을 통해 공격 진화 초진화 카드 활성화 액션을 수집합니다.
-    player_field_card_ids = game.game_state_manager.get_card_ids_in_zone(current_player, Zone.FIELD)
-    opponent_field_card_ids = game.game_state_manager.get_card_ids_in_zone(opponent_id, Zone.FIELD)
-
-    for card_id in player_field_card_ids:
-        available_actions, _ = game.get_available_actions(card_id, current_player)
-
-        # 2-1 추종자 공격 액션을 검증하고 추가합니다.
-        if T.ACTION_ATTACK in available_actions:
-            opponent_targets_id = [opp_card_id for opp_card_id in opponent_field_card_ids if game.game_state_manager.get_type(opp_card_id) == CardType.FOLLOWER] + [opponent_id]
-            for target_id in opponent_targets_id:
-                if game.rule_engine.validate_attack(card_id, target_id):
-                    possible_actions.append({
-                        "type": "ATTACK",
-                        "attacker_id": card_id,
-                        "target_id": target_id
-                    })
-
-        # 2-2 추종자 진화 액션을 추가합니다.
-        if T.ACTION_EVOLVE in available_actions:
-            possible_actions.append({
-                "type": "EVOLVE",
-                "card_id": card_id
-            })
-
-        # 2-3 추종자 초진화 액션을 추가합니다.
-        if T.ACTION_SUPER_EVOLVE in available_actions:
-            possible_actions.append({
-                "type": "SUPER_EVOLVE",
-                "card_id": card_id
-            })
-
-        # 2-4 카드 활성화 액션을 추가합니다.
-        if T.ACTION_ENGAGE in available_actions:
-            possible_actions.append({
-                "type": "ENGAGE",
-                "card_id": card_id
-            })
-
-    # 3 언제나 선택 가능한 턴 종료 액션을 추가합니다.
-    possible_actions.append({
-        "type": "END_TURN"
-    })
-
-    return possible_actions
+# Legal-action enumeration lives in svai.actions (shared with the Gymnasium env).
+from svai.actions import legal_actions as get_all_possible_actions  # noqa: E402
 
 
 def validate_game_state_invariants(game: Game):
