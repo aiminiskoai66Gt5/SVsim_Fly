@@ -37,7 +37,7 @@ from src.engine.main_game_logic import Game
 from svai import actions as A
 from svai.agents.base import Agent
 from svai.agents.random_agent import RandomAgent
-from svai.config import load_config, repo_path
+from svai.config import apply_display_config, load_config, repo_path
 from svai.deciders import AgentDecider
 from svai.interfaces import Action, Decider, NullView
 
@@ -117,6 +117,7 @@ class SVEnv(gym.Env if gym else object):
         self.cfg = config or load_config()
         env_cfg = self.cfg["env"]
         ensure_card_database(env_cfg["card_database"])
+        apply_display_config(self.cfg)
         self.agent_player = agent_player
         self.opponent_player = PLAYER_IDS[1] if agent_player == PLAYER_IDS[0] else PLAYER_IDS[0]
         self._opponent_spec = opponent          # "random", an Agent, or None (self-play)

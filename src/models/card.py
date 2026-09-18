@@ -113,6 +113,9 @@ class Card:
         name_en = self.card_data.get('name')
         lang = cd.DISPLAY_LANGUAGE
         if lang == "zh_tw":
+            by_id = cd.ZH_TW_BY_ID.get(str(self.card_data.get("card_id")))
+            if by_id and by_id.get("name_zh_tw"):
+                return by_id["name_zh_tw"]
             return cd.ZH_TW_NAME_MAP.get(name_en) or name_en
         if lang == "ko":
             return self.card_data.get('name_ko') or name_en

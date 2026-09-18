@@ -8,17 +8,37 @@ from src.common.effect import Effect, Process
 KOR_NAME_MAP = {}
 
 # Card-name display language: "en" (default), "ko" (Korean names from card_database/2_kor_database)
-# or "zh_tw" (Traditional Chinese names from ZH_TW_NAME_MAP, loaded by load_zh_tw_names()).
+# or "zh_tw" (official Traditional Chinese names, loaded by load_zh_tw_names()).
 DISPLAY_LANGUAGE = "en"
-ZH_TW_NAME_MAP: Dict[str, str] = {}
+ZH_TW_NAME_MAP: Dict[str, str] = {}      # English name -> zh-TW name
+ZH_TW_BY_ID: Dict[str, Dict[str, Any]] = {}  # card id -> {"name_zh_tw", "skill_text_zh_tw", ...}
 
 
 def load_zh_tw_names(path: str) -> int:
-    """Load an English -> Traditional Chinese card-name map (JSON object). Returns entries loaded."""
+    """Load Traditional Chinese card data. Returns the number of cards loaded.
+
+    Accepts either the official dump ``i18n/cards_zh_tw.json`` ({card_id: {name_zh_tw,
+    name_en, skill_text_zh_tw, ...}}) or a plain {english name: zh-TW name} map.
+    """
     import json
     with open(path, "r", encoding="utf-8") as f:
-        ZH_TW_NAME_MAP.update(json.load(f))
-    return len(ZH_TW_NAME_MAP)
+        data = json.load(f)
+    n = 0
+    for key, value in data.items():
+        if isinstance(value, dict):
+            ZH_TW_BY_ID[str(key)] = value
+            if value.get("name_en") and value.get("name_zh_tw"):
+                ZH_TW_NAME_MAP[value["name_en"]] = value["name_zh_tw"]
+        else:
+            ZH_TW_NAME_MAP[key] = value
+        n += 1
+    return n
+
+
+def zh_tw_skill_text(card_id: str):
+    """Official zh-TW ability text for a card id, or None."""
+    entry = ZH_TW_BY_ID.get(str(card_id))
+    return entry.get("skill_text_zh_tw") if entry else None
 
 
 def load_kor_names(kor_db_dir: str = 'card_database/2_kor_database'):

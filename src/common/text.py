@@ -72,3 +72,23 @@ DECK_LOAD_FAILED = "牌組檔案載入失敗，改用預設牌組。{error}"
 DECK_START = "開始對戰"
 DECK_START_DEFAULT = "用預設牌組開始"
 GAME_OVER_DEMO = "--- 範例對局結束 ---"
+
+# Keyword names as the official site shows them (shadowverse-wb.com, lang=cht, 2026-09-19).
+# Keys are EffectType member names; unlisted members fall back to the member name.
+KEYWORD_ZH_TW = {
+    "FANFARE": "入場曲", "LAST_WORDS": "謝幕曲", "ON_EVOLVE": "進化時", "EVOLVED": "進化時",
+    "ON_SUPER_EVOLVE": "超進化時", "SUPER_EVOLVED": "超進化時", "STRIKE": "攻擊時", "CLASH": "交戰時",
+    "WARD": "守護", "STORM": "疾馳", "RUSH": "突進", "AMBUSH": "潛行", "BANE": "必殺", "DRAIN": "吸血",
+    "INTIMIDATE": "威懾", "AURA": "光紋", "BARRIER": "障壁", "OVERFLOW": "覺醒", "SPELLBOOST": "魔力增幅時",
+    "COUNTDOWN": "倒數", "NECROMANCY": "死靈術", "REANIMATE": "亡者召還", "EARTH_RITE": "土之秘術",
+    "EARTH_SIGIL": "土之印", "ENHANCE": "爆能強化", "INVOKE": "瞬念召喚", "RALLY": "協作", "COMBO": "連擊",
+    "MODE": "模式", "ENGAGE": "策動", "SKYBOUND_ART": "奧義", "SUPER_SKYBOUND_ART": "解放奧義",
+    "SPELL": "效果", "ON_MY_TURN_END": "我方回合結束時", "ON_OPPONENTS_TURN_END": "對方回合結束時",
+    "ON_MY_TURN_START": "我方回合開始時", "ON_FOLLOWER_ENTER_FIELD": "從者進場時", "ON_LEAVE_FIELD": "離場時",
+    "DISABLE": "無法攻擊", "ON_DISCARD": "被捨棄時",
+}
+
+
+def keyword_name(effect_type) -> str:
+    """Display name of an EffectType (official zh-TW where known)."""
+    return KEYWORD_ZH_TW.get(getattr(effect_type, "name", str(effect_type)), getattr(effect_type, "name", str(effect_type)))

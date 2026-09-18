@@ -189,3 +189,19 @@ class TestCardValidation(unittest.TestCase):
                                      exclude_unparsed_cards=True))
             self.assertNotEqual(rec.outcome, "exception")
             self.assertEqual(rec.unimplemented_effects, 0, f"seed {seed}")
+
+
+class TestOfficialZhTw(unittest.TestCase):
+    def test_official_file_covers_every_database_card(self):
+        import json
+        from svai.config import REPO_ROOT
+        from svai.env import ensure_card_database
+        ensure_card_database("card_database/3_parsed_database/card_database_parsed.json")
+        with open(REPO_ROOT / "i18n" / "cards_zh_tw.json", encoding="utf-8") as f:
+            official = json.load(f)
+        pool = {**card_data.BASIC_CARD_DATABASE, **card_data.LEGENDS_RISE_CARD_DATABASE, **card_data.TOKEN_CARD_DATABASE}
+        missing = [cid for cid in pool if cid not in official]
+        self.assertEqual(missing, [])
+        mismatched = [cid for cid, c in pool.items() if official[cid]["name_en"] != c.name]
+        self.assertEqual(mismatched, [])
+        self.assertEqual(official["10001110"]["name_zh_tw"], "不屈的劍鬥士")

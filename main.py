@@ -110,6 +110,8 @@ def select_decks_gui():
 # 게임 실행 예시입니다.
 if __name__ == "__main__":
     card_data.load_card_databases('card_database/3_parsed_database/card_database_parsed.json')
+    from svai.config import apply_display_config
+    apply_display_config()  # card names / text language from config.toml
     p1_deck, p2_deck = select_decks_gui()
     # Default view is the tkinter GameGUI and the default decider is a HumanDecider
     # bound to its dialogs, i.e. human vs human exactly as before.

@@ -14,8 +14,8 @@ logs = "data/logs"
 tmp = "data/tmp"
 
 [display]
-card_name_language = "en"      # "en" | "ko" | "zh_tw"
-zh_tw_names_file = ""          # JSON {english name: zh-TW name}; only used with "zh_tw"
+card_name_language = "zh_tw"   # "en" | "ko" | "zh_tw"
+zh_tw_names_file = "i18n/cards_zh_tw.json"  # official names/text (shadowverse-wb.com, lang=cht)
 
 [env]
 max_turns = 40                 # truncation limit per game (turn counter of the engine)

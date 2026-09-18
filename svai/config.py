@@ -75,6 +75,29 @@ def load_config(path: Optional[Path] = None) -> Dict[str, Any]:
     return cfg
 
 
+def apply_display_config(cfg: Optional[Dict[str, Any]] = None) -> str:
+    """Set the card-name display language from config and load the zh-TW data if needed.
+
+    Returns the language in effect. Safe to call more than once.
+    """
+    from src.common import card_data
+    cfg = cfg or load_config()
+    disp = cfg.get("display", {})
+    lang = disp.get("card_name_language", "en")
+    if lang == "zh_tw":
+        path = disp.get("zh_tw_names_file") or "i18n/cards_zh_tw.json"
+        p = Path(path)
+        if not p.is_absolute():
+            p = REPO_ROOT / p
+        if p.exists():
+            if not card_data.ZH_TW_BY_ID:
+                card_data.load_zh_tw_names(str(p))
+        else:
+            lang = "en"  # file missing: fall back rather than show blanks
+    card_data.DISPLAY_LANGUAGE = lang
+    return lang
+
+
 def ensure_dir(path: Path) -> Path:
     """Create ``path`` (after the forbidden-root check) and return it."""
     path = assert_allowed_path(path)

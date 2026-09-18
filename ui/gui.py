@@ -142,9 +142,13 @@ class GameGUI(View):
                 countdown_label = ttk.Label(card_frame, text=T.CARD_COUNTDOWN.format(n=card.countdown_value))
                 countdown_label.pack()
 
-            keywords = [eff.type.value for eff in card.effects]
+            keywords = []
+            for eff in card.effects:
+                name = T.keyword_name(eff.type)
+                if name not in keywords:
+                    keywords.append(name)
             if keywords:
-                keyword_label = ttk.Label(card_frame, text=", ".join(keywords)[:12], wraplength=100)
+                keyword_label = ttk.Label(card_frame, text=", ".join(keywords)[:24], wraplength=110)
                 keyword_label.pack()
 
     def get_mulligan_choices(self, player_id: str, hand_cards: List['Card']) -> List[str]:

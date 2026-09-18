@@ -157,10 +157,17 @@ class TestM0Interfaces(unittest.TestCase):
             card_data.DISPLAY_LANGUAGE = "en"
             self.assertEqual(card.get_display_name(), card.card_data.name)
             card_data.DISPLAY_LANGUAGE = "zh_tw"
+            by_id = card_data.ZH_TW_BY_ID.pop(str(card.card_data.card_id), None)
+            saved = card_data.ZH_TW_NAME_MAP.pop(card.card_data.name, None)
             card_data.ZH_TW_NAME_MAP[card.card_data.name] = "測試名"
             self.assertEqual(card.get_display_name(), "測試名")
             del card_data.ZH_TW_NAME_MAP[card.card_data.name]
             self.assertEqual(card.get_display_name(), card.card_data.name)  # falls back to English
+            if by_id is not None:
+                card_data.ZH_TW_BY_ID[str(card.card_data.card_id)] = by_id
+                self.assertEqual(card.get_display_name(), by_id["name_zh_tw"])  # official name by id wins
+            if saved is not None:
+                card_data.ZH_TW_NAME_MAP[card.card_data.name] = saved
         finally:
             card_data.DISPLAY_LANGUAGE = old
 
