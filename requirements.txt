@@ -1,0 +1,11 @@
+# Runtime for the AI side (engine itself needs only the standard library + tkinter for the GUI).
+# All pure-Python or official binary wheels: nothing here needs a local compiler.
+numpy>=1.26
+scipy>=1.11
+gymnasium>=1.0
+pandas>=2.1
+pyarrow>=15
+# torch: CPU wheel is enough for the whole pipeline.
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+# (or the CUDA wheel from pytorch.org if you want the 3090 for training)
+torch>=2.2

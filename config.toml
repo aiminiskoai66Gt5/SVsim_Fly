@@ -24,3 +24,19 @@ deck_mode = "random"           # "random": rotation-legal random decks per seed;
 exclude_unparsed_cards = false # random decks: drop cards with effects the engine cannot fully execute (446/657 remain)
 deck_files = ["decks/리셰나_네메시스.json", "decks/밀티오_나이트메어.json"]
 card_database = "card_database/3_parsed_database/card_database_parsed.json"
+
+[fly]
+# MaleCNS release files live in <paths.datasets>/malecns/ (see svai/fly/graph.py for the URLs)
+release_dir = "data/datasets/malecns"
+graph_cache = "data/cache/fly"      # built graphs: <graph_cache>/<subset>_min<min_synapses>.npz
+subset = "central_brain"            # "central_brain" | "brain" | "all"
+min_synapses = 3
+status_values = ["Traced"]
+n_input = 256                       # designated input neurons (drawn from sensory superclasses)
+n_output = 256                      # designated output neurons (descending neurons)
+microsteps = 4                      # recurrent microsteps per decision
+spectral_radius = 0.9               # recurrent matrix rescaled to this dominant eigenvalue magnitude
+learn_edge_gain = false
+checkpoint_dir = "data/checkpoints/fly"
+log_dir = "data/logs/fly"
+checkpoint = "data/checkpoints/fly/latest.pt"   # what FlyAgent loads

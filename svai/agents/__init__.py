@@ -25,6 +25,9 @@ def make_agent(name: str, rng: Optional[random.Random] = None) -> Agent:
         elif name == "greedy":
             from svai.agents.greedy_agent import GreedyAgent
             _REGISTRY["greedy"] = lambda r: GreedyAgent(r)
+        elif name == "fly":
+            from svai.agents.fly_agent import FlyAgent
+            _REGISTRY["fly"] = lambda r: FlyAgent(r)
         elif name == "hang":  # test-only: never returns, exercises the arena timeout
             from svai.agents.testing import HangAgent
             _REGISTRY["hang"] = lambda r: HangAgent()
@@ -34,4 +37,4 @@ def make_agent(name: str, rng: Optional[random.Random] = None) -> Agent:
 
 
 def agent_names():
-    return sorted(set(_REGISTRY) | {"random", "greedy"})
+    return sorted(set(_REGISTRY) | {"random", "greedy", "fly"})

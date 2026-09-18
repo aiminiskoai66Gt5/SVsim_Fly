@@ -69,6 +69,16 @@ def load_config(path: Optional[Path] = None) -> Dict[str, Any]:
     env.setdefault("deck_files", [])
     env.setdefault("exclude_unparsed_cards", False)
     env.setdefault("card_database", "card_database/3_parsed_database/card_database_parsed.json")
+    fly = cfg.setdefault("fly", {})
+    for key, default in (("release_dir", "data/datasets/malecns"), ("graph_cache", "data/cache/fly"),
+                         ("subset", "central_brain"), ("min_synapses", 3), ("status_values", ["Traced"]),
+                         ("n_input", 256), ("n_output", 256), ("microsteps", 4), ("spectral_radius", 0.9),
+                         ("learn_edge_gain", False), ("checkpoint_dir", "data/checkpoints/fly"),
+                         ("log_dir", "data/logs/fly"), ("checkpoint", "data/checkpoints/fly/latest.pt")):
+        fly.setdefault(key, default)
+    for key in ("release_dir", "graph_cache", "checkpoint_dir", "log_dir", "checkpoint"):
+        p = Path(fly[key])
+        fly[key] = assert_allowed_path(p if p.is_absolute() else REPO_ROOT / p)
     disp = cfg.setdefault("display", {})
     disp.setdefault("card_name_language", "en")
     disp.setdefault("zh_tw_names_file", "")
