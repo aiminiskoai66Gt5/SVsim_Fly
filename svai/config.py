@@ -67,6 +67,7 @@ def load_config(path: Optional[Path] = None) -> Dict[str, Any]:
     env.setdefault("opponent_actions_per_turn", 30)
     env.setdefault("deck_mode", "random")
     env.setdefault("deck_files", [])
+    env.setdefault("exclude_unparsed_cards", False)
     env.setdefault("card_database", "card_database/3_parsed_database/card_database_parsed.json")
     disp = cfg.setdefault("display", {})
     disp.setdefault("card_name_language", "en")

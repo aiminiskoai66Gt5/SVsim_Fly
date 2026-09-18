@@ -634,6 +634,36 @@ def evaluate_condition(card: Any, condition_str: str) -> bool:
         
     return True
 
+_REFERENCE_PREFIXES = [
+    "exact copies of ", "an exact copy of ", "copies of ",
+    "copy of ", "and give them ", "and give it ",
+    "a ", "an ", "the ", "d ", "and "
+]
+
+
+def resolve_card_reference(ref: str):
+    """Resolve a card id, an English/Korean name, or a parsed phrase like
+    'a Fortifier Artifact' / 'copies of Skeleton' to its CardData, else None."""
+    resolved = get_card_data_by_id(ref)
+    if resolved:
+        return resolved
+    clean_name = ref.strip()
+    changed = True
+    while changed:
+        changed = False
+        lower = clean_name.lower()
+        for prefix in _REFERENCE_PREFIXES:
+            if lower.startswith(prefix):
+                clean_name = clean_name[len(prefix):].strip()
+                changed = True
+                break
+    for db in [BASIC_CARD_DATABASE, LEGENDS_RISE_CARD_DATABASE, TOKEN_CARD_DATABASE]:
+        for c_data in db.values():
+            if c_data.name == clean_name or c_data.name_ko == clean_name:
+                return c_data
+    return None
+
+
 def get_card_data_by_id(card_id: str) -> Any:
     """ID를 기반으로 정적 카드 데이터를 조회합니다."""
     for db in [BASIC_CARD_DATABASE, LEGENDS_RISE_CARD_DATABASE, TOKEN_CARD_DATABASE]:

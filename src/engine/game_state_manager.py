@@ -24,6 +24,7 @@ class GameStateManager:
         self._next_card_instance_id = 0
         self.game = None  # Game 인스턴스를 참조하기 위한 필드를 추가합니다.
         self.recently_summoned_cards = []  # 최근 소환된 카드 객체 목록입니다.
+        self.unimplemented_hits: List[dict] = []  # Card effects the engine could not execute (see EffectProcessor._unimplemented).
         self.is_awaiting_choice: bool = False
         self.rng = random.Random()  # Single source of randomness; Game injects the shared instance.
         self.deck_out_player_id: Optional[str] = None  # First player who had to draw from an empty deck.
@@ -35,34 +36,7 @@ class GameStateManager:
         # card_data_obj 가 str 인 경우 정적 데이터베이스에서 조회하여 치환합니다.
         if isinstance(card_data_obj, str):
             from src.common import card_data as cd
-            # 1. card_id 로 먼저 조회해 봅니다.
-            resolved = cd.get_card_data_by_id(card_data_obj)
-            if not resolved:
-                # 2. card_id 가 아니면 카드 영문명 또는 한글명으로 조회해 봅니다.
-                # 오염된 접두사나 영어 관사 및 수량사를 반복적으로 제거하여 순수 카드명을 추출합니다.
-                clean_name = card_data_obj.strip()
-                prefixes = [
-                    "exact copies of ", "an exact copy of ", "copies of ",
-                    "copy of ", "and give them ", "and give it ",
-                    "a ", "an ", "the ", "d ", "and "
-                ]
-                changed = True
-                while changed:
-                    changed = False
-                    clean_name_lower = clean_name.lower()
-                    for prefix in prefixes:
-                        if clean_name_lower.startswith(prefix):
-                            clean_name = clean_name[len(prefix):].strip()
-                            changed = True
-                            break
-
-                for db in [cd.BASIC_CARD_DATABASE, cd.LEGENDS_RISE_CARD_DATABASE, cd.TOKEN_CARD_DATABASE]:
-                    for c_data in db.values():
-                        if c_data.name == clean_name or c_data.name_ko == clean_name:
-                            resolved = c_data
-                            break
-                    if resolved:
-                        break
+            resolved = cd.resolve_card_reference(card_data_obj)
             if resolved:
                 card_data_obj = resolved
             else:

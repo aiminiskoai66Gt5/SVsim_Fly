@@ -145,15 +145,20 @@ def validate_deck_rules(deck_cards):
     return True
 
 
-def generate_random_deck(class_type, all_cards, rng=None):
+def generate_random_deck(class_type, all_cards, rng=None, exclude_unparsed=False):
     """지정된 직업과 Rotation 제약을 충족하는 무작위 덱을 생성합니다.
 
     rng - random.Random to draw from (defaults to the global random module).
+    exclude_unparsed - drop cards whose parsed effects the engine cannot fully execute
+                       (src.common.card_validation), so every effect in the deck works.
     """
     import random as _random
     rng = rng or _random
     # 덱 구성에 필요한 카드 필터를 진행합니다.
     filtered = filter_cards_by_rules("Rotation", class_type, all_cards)
+    if exclude_unparsed:
+        from src.common.card_validation import is_fully_parsed
+        filtered = [c for c in filtered if is_fully_parsed(c)]
     
     neutral_pool = [c for c in filtered if c.class_type == ClassType.NEUTRAL]
     class_pool = [c for c in filtered if c.class_type == class_type]

@@ -29,6 +29,7 @@ class GameSpec:
     actions_per_turn_cap: int = 100
     deck_mode: str = "random"
     deck_files: List[str] = field(default_factory=list)
+    exclude_unparsed_cards: bool = False
 
 
 @dataclass
@@ -46,6 +47,7 @@ class GameRecord:
     decision_time_a: List[float] = field(default_factory=list)
     decision_time_b: List[float] = field(default_factory=list)
     turn_caps_hit: int = 0
+    unimplemented_effects: int = 0   # card effects the engine reported as unimplemented (data gaps)
     exception_type: Optional[str] = None
     exception_site: Optional[str] = None
     exception_message: Optional[str] = None
@@ -78,7 +80,7 @@ def play_game(spec: GameSpec) -> GameRecord:
     # Self-play env: each player's non-action decisions (mulligan, effect options,
     # discard, fuse) go to that player's own agent.
     env = SVEnv(opponent=None, quiet=True, deck_mode=spec.deck_mode, deck_files=spec.deck_files,
-                max_turns=spec.max_turns,
+                max_turns=spec.max_turns, exclude_unparsed_cards=spec.exclude_unparsed_cards,
                 option_agent={pid: agents[side] for pid, side in side_of.items()})
     try:
         obs, info = env.reset(seed=spec.seed)
@@ -107,6 +109,7 @@ def play_game(spec: GameSpec) -> GameRecord:
             actions_this_turn += 1
             done = term or trunc
         rec.turns = info["turn"]
+        rec.unimplemented_effects = len(env.game.game_state_manager.unimplemented_hits)
         winner = info["winner"]
         rec.winner_player = winner
         if trunc and not term:
@@ -127,6 +130,8 @@ def play_game(spec: GameSpec) -> GameRecord:
         rec.exception_site = _site(exc)
         rec.exception_message = str(exc)[:200]
         rec.turns = env.game.game_state_manager.turn_number if env.game else 0
+    if env.game is not None:
+        rec.unimplemented_effects = len(env.game.game_state_manager.unimplemented_hits)
     rec.wall_time = time.perf_counter() - t0
     return rec
 
@@ -185,6 +190,8 @@ def summarize(records: List[GameRecord], agent_a: str, agent_b: str) -> Dict[str
         "decision_time_a": [t for r in records for t in r.decision_time_a],
         "decision_time_b": [t for r in records for t in r.decision_time_b],
         "turn_caps_hit": sum(r.turn_caps_hit for r in records),
+        "games_with_unimplemented": sum(1 for r in records if r.unimplemented_effects),
+        "unimplemented_total": sum(r.unimplemented_effects for r in records),
         "exception_sites": dict(sorted(sites.items(), key=lambda kv: -kv[1])),
         "mean_wall_time": statistics.mean([r.wall_time for r in records]) if records else 0.0,
         "median_wall_time": statistics.median([r.wall_time for r in records]) if records else 0.0,
@@ -210,6 +217,7 @@ def format_report(s: Dict[str, Any]) -> str:
         f"| decision time A | {_ms_stats(s['decision_time_a'])} |",
         f"| decision time B | {_ms_stats(s['decision_time_b'])} |",
         f"| per-turn action cap hits | {s['turn_caps_hit']} |",
+        f"| games with an unimplemented (unparsed) card effect | {s['games_with_unimplemented']} ({_pct(s['games_with_unimplemented'] / max(1, s['games']))}), {s['unimplemented_total']} hits |",
         f"| wall time per game (mean / median) | {1000 * s['mean_wall_time']:.0f} / {1000 * s['median_wall_time']:.0f} ms |",
     ]
     if s["exception_sites"]:

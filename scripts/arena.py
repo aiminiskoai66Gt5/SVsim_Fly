@@ -33,12 +33,15 @@ def main(argv=None) -> int:
     ap.add_argument("--deck-mode", choices=["random", "files"], default="random")
     ap.add_argument("--deck-files", nargs="*", default=None)
     ap.add_argument("--label", default=None, help="output file name (default: timestamped)")
+    ap.add_argument("--exclude-unparsed", action="store_true",
+                    help="random decks only use cards whose effects the engine can fully execute")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
 
     result = run_arena(args.a, args.b, args.games, args.seed, timeout=args.timeout, workers=args.workers,
                        swap_sides=not args.no_swap, max_turns=args.max_turns, deck_mode=args.deck_mode,
-                       deck_files=args.deck_files, label=args.label, progress=not args.quiet)
+                       deck_files=args.deck_files, label=args.label, progress=not args.quiet,
+                       exclude_unparsed_cards=args.exclude_unparsed)
     print(result["report"])
     print(f"written: {result['path']}.json / .md")
     return 0

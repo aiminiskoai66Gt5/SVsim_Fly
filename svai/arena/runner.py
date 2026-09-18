@@ -135,10 +135,13 @@ def run_arena(agent_a: str, agent_b: str, games: int, seed: int, timeout: float 
               workers: Optional[int] = None, swap_sides: bool = True, max_turns: int = 40,
               deck_mode: str = "random", deck_files: Optional[List[str]] = None,
               out_dir: Optional[Path] = None, label: Optional[str] = None,
-              progress: bool = True) -> Dict[str, Any]:
+              progress: bool = True, exclude_unparsed_cards: bool = False) -> Dict[str, Any]:
     """Play the match, print the report, and write JSON + Markdown under the logs dir."""
+    if deck_mode == "files" and not deck_files:
+        deck_files = list(load_config()["env"]["deck_files"])
     specs = make_specs(agent_a, agent_b, games, seed, swap_sides=swap_sides, max_turns=max_turns,
-                       deck_mode=deck_mode, deck_files=deck_files or [])
+                       deck_mode=deck_mode, deck_files=deck_files or [],
+                       exclude_unparsed_cards=exclude_unparsed_cards)
     t0 = time.perf_counter()
     records = run_specs(specs, timeout=timeout, workers=workers, progress=progress)
     elapsed = time.perf_counter() - t0
@@ -146,7 +149,9 @@ def run_arena(agent_a: str, agent_b: str, games: int, seed: int, timeout: float 
     summary["seed"] = seed
     summary["timeout"] = timeout
     summary["elapsed_s"] = elapsed
-    report = format_report(summary) + f"\n\nseed base {seed}, per-game timeout {timeout}s, wall {elapsed:.1f}s, workers {workers or 'auto'}\n"
+    report = format_report(summary) + (f"\n\nseed base {seed}, per-game timeout {timeout}s, wall {elapsed:.1f}s, "
+                                       f"workers {workers or 'auto'}, deck_mode {deck_mode}, "
+                                       f"exclude_unparsed_cards {exclude_unparsed_cards}\n")
 
     cfg = load_config()
     out_dir = ensure_dir(Path(out_dir) if out_dir else Path(cfg["paths"]["logs"]) / "arena")

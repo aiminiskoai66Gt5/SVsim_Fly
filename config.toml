@@ -21,5 +21,6 @@ zh_tw_names_file = ""          # JSON {english name: zh-TW name}; only used with
 max_turns = 40                 # truncation limit per game (turn counter of the engine)
 opponent_actions_per_turn = 30 # safety cap for scripted opponents, as in fuzz_runner
 deck_mode = "random"           # "random": rotation-legal random decks per seed; "files": deck_files
+exclude_unparsed_cards = false # random decks: drop cards with effects the engine cannot fully execute (446/657 remain)
 deck_files = ["decks/리셰나_네메시스.json", "decks/밀티오_나이트메어.json"]
 card_database = "card_database/3_parsed_database/card_database_parsed.json"

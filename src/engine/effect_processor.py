@@ -4,7 +4,7 @@ from src.common import text as T
 import logging
 
 import src.common.card_data as card_data
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 def to_target_type(val):
     """문자열 혹은 enum을 TargetType enum으로 변환합니다."""
@@ -110,6 +110,59 @@ class EffectProcessor:
             ProcessType.SUMMON_COPY: self._process_summon_copy,
         }
 
+    # Fields a process must carry for its handler to run without crashing. A process
+    # that lacks them (the upstream card parser leaves such gaps: only ``raw_action_text``,
+    # or a missing ``value``) is reported through _unimplemented() and skipped.
+    REQUIRED_PROCESS_FIELDS = {
+        ProcessType.TRIGGER_EFFECT: ("value",),
+        ProcessType.REMOVE_KEYWORD: ("value",),
+        ProcessType.ADD_EFFECT: ("value",),
+        ProcessType.SUMMON: ("value",),
+        ProcessType.TRANSFORM: ("value",),
+    }
+
+    def _unimplemented(self, game_state_manager: 'GameStateManager', caster: Any, node: Any, reason: str) -> None:
+        """Record and log a card effect the engine cannot execute (unparsed / malformed data).
+
+        Nothing is silently dropped: the hit is appended to
+        ``game_state_manager.unimplemented_hits`` (the arena reports it) and an
+        [ERROR] line is printed.
+        """
+        name = caster.get_display_name() if hasattr(caster, "get_display_name") else str(caster)
+        entry = {"card": name, "node": repr(node)[:160], "reason": reason}
+        game_state_manager.unimplemented_hits.append(entry)
+        print(f"[ERROR] unimplemented effect on {name}: {reason} :: {entry['node']}")
+
+    def _process_problem(self, node: Any) -> Optional[str]:
+        """Why ``node`` cannot be dispatched to a handler, or None if it can."""
+        if not isinstance(node, Process):
+            return "not a parsed process (raw text only)"
+        ptype = getattr(node, "process", None)
+        if ptype is None:
+            return "process has no type"
+        if isinstance(ptype, str):
+            return f"unknown process type {ptype!r}"
+        if ptype not in self.process_handlers:
+            return f"no handler for {ptype.name}"
+        for field in self.REQUIRED_PROCESS_FIELDS.get(ptype, ()):
+            if field not in node.attributes or node.attributes.get(field) is None:
+                return f"{ptype.name} lacks required field {field!r}"
+        return None
+
+    def _run_post_actions(self, effect_data: Any, target: Any, game_state_manager: 'GameStateManager') -> None:
+        """Run ``effect_data.post_action`` (one or a list) on ``target``, reporting unparsed ones."""
+        post_actions = getattr(effect_data, "post_action", None)
+        if not post_actions:
+            return
+        if not isinstance(post_actions, list):
+            post_actions = [post_actions]
+        for post_act in post_actions:
+            problem = self._process_problem(post_act)
+            if problem:
+                self._unimplemented(game_state_manager, target, post_act, problem)
+                continue
+            self.process_handlers[post_act.process](post_act, target, game_state_manager)
+
     def _get_owner_id(self, caster_card: Any) -> str:
         """시전자 카드 또는 플레이어로부터 소유자 ID를 추출합니다."""
         if hasattr(caster_card, "owner_id"):
@@ -166,8 +219,8 @@ class EffectProcessor:
 
     def _resolve_effect_variables(self, effect: Any, x_val: Any) -> None:
         """효과 및 프로세스 내의 모든 동적 변수를 재귀적으로 해석하여 업데이트합니다."""
-        if not effect:
-            return
+        if not effect or not isinstance(effect, (Effect, Process)):
+            return  # plain dicts are unparsed leftovers; they are reported when dispatched
 
         processes = getattr(effect, "processes", None)
         if processes:
@@ -284,11 +337,13 @@ class EffectProcessor:
             target_type = to_target_type(target_type)
         except ValueError as e:
             self._log_error(str(e))
+            self._unimplemented(gsm, caster_card, target_type, f"unknown target type: {e}")
             return []
         handler = self.target_handlers.get(target_type)
         print(f"[DEBUG INVOKE] target_type={target_type}, handler={handler.__name__ if handler else 'None'}")
         if not handler:
-            self._log_error(f"Target type {target_type} has no handler.")
+            # Reported (not just logged to stderr) so the arena counts it as an unimplemented effect.
+            self._unimplemented(gsm, caster_card, target_type, f"no target handler for {getattr(target_type, 'name', target_type)}")
             return []
         targets = handler(caster_card, gsm)
         self._log_info(f"Target type {target_type.value} resolved to {[t.get_display_name() for t in targets]}")
@@ -645,6 +700,9 @@ class EffectProcessor:
                     self._log_info(f"[LOG] : {target_id} 덱에서 조건에 맞는 카드가 검색되지 않았습니다.")
                     return
                 self._log_info(f"[LOG] : {target_id} 덱 아웃!")
+                # Drawing from an empty deck loses, whichever way the draw happened (EI-007).
+                if game_state_manager.deck_out_player_id is None:
+                    game_state_manager.deck_out_player_id = target_id
                 return
             drawn_card = deck.pop(0)
             game_state_manager.move_card(drawn_card.card_id, Zone.DECK, Zone.HAND)
@@ -654,18 +712,22 @@ class EffectProcessor:
                 if not isinstance(post_actions, list):
                     post_actions = [post_actions]
                 for post_act in post_actions:
-                    proc_val = post_act.process if hasattr(post_act, "process") else post_act.get("process")
-                    handler = self.process_handlers.get(proc_val)
-                    if handler:
-                        handler(post_act, drawn_card, game_state_manager)
-                    else:
-                        self._log_error(f"[ERROR] 처리 타입 {proc_val.value if hasattr(proc_val, 'value') else proc_val}에 대한 핸들러가 정의되지 않았습니다.")
+                    problem = self._process_problem(post_act)
+                    if problem:
+                        self._unimplemented(game_state_manager, drawn_card, post_act, problem)
+                        continue
+                    self.process_handlers[post_act.process](post_act, drawn_card, game_state_manager)
 
         print(f"[LOG] 처리 내용: 카드 드로우, 타겟: {target_id}, 드로우 장수: {count}")
 
     def _process_heal(self, effect_data: Effect, target: Any, game_state_manager: 'GameStateManager'):
         """처리 - 체력 회복"""
         value = effect_data.value
+        if isinstance(value, str) and value.strip().lower() in ("full", "fully", "all"):
+            value = max(0, target.max_defense - target.current_defense)  # "Fully restore the defense"
+        elif not isinstance(value, int):
+            self._unimplemented(game_state_manager, target, effect_data, f"HEAL value {value!r} is not a number")
+            return
         target.heal_damage(value)
         print(f"[LOG] 처리 내용: 체력 회복, 타겟: {target.get_display_name()}, 회복량: {value}")
 
@@ -696,14 +758,7 @@ class EffectProcessor:
             print(f"[LOG] 처리 내용: 패에 카드 추가, 타겟: {target_id}, 추가 카드: {card.get_display_name()}")
             
             # 후속 조치 효과가 정의되어 있다면 실행합니다.
-            post_actions = getattr(effect_data, "post_action", None)
-            if post_actions:
-                if not isinstance(post_actions, list):
-                    post_actions = [post_actions]
-                for post_act in post_actions:
-                    handler = self.process_handlers.get(post_act.process)
-                    if handler:
-                        handler(post_act, card, game_state_manager)
+            self._run_post_actions(effect_data, card, game_state_manager)
 
         elif isinstance(value, list):
             value_copy = list(value)
@@ -717,14 +772,7 @@ class EffectProcessor:
                 print(f"[LOG] 처리 내용: 패에 카드 추가, 타겟: {target_id}, 추가 카드: {card.get_display_name()}")
                 
                 # 후속 조치 효과가 정의되어 있다면 실행합니다.
-                post_actions = getattr(effect_data, "post_action", None)
-                if post_actions:
-                    if not isinstance(post_actions, list):
-                        post_actions = [post_actions]
-                    for post_act in post_actions:
-                        handler = self.process_handlers.get(post_act.process)
-                        if handler:
-                            handler(post_act, card, game_state_manager)
+                self._run_post_actions(effect_data, card, game_state_manager)
 
     def _process_summon(self, effect_data: Effect, target: Player, game_state_manager: 'GameStateManager'):
         """처리 - 필드에 카드 소환"""
@@ -739,14 +787,7 @@ class EffectProcessor:
             print(f"[LOG] 처리 내용: 필드에 카드 소환, 타겟: {target_id}, 소환 카드: {card.get_display_name()}")
 
             # 후속 조치 효과가 정의되어 있다면 실행합니다.
-            post_actions = getattr(effect_data, "post_action", None)
-            if post_actions:
-                if not isinstance(post_actions, list):
-                    post_actions = [post_actions]
-                for post_act in post_actions:
-                    handler = self.process_handlers.get(post_act.process)
-                    if handler:
-                        handler(post_act, card, game_state_manager)
+            self._run_post_actions(effect_data, card, game_state_manager)
 
         elif isinstance(value, list):
             value_copy = list(value)
@@ -758,14 +799,7 @@ class EffectProcessor:
                 print(f"[LOG] 처리 내용: 필드에 카드 소환, 타겟: {target_id}, 소환 카드: {card.get_display_name()}")
 
                 # 후속 조치 효과가 정의되어 있다면 실행합니다.
-                post_actions = getattr(effect_data, "post_action", None)
-                if post_actions:
-                    if not isinstance(post_actions, list):
-                        post_actions = [post_actions]
-                    for post_act in post_actions:
-                        handler = self.process_handlers.get(post_act.process)
-                        if handler:
-                            handler(post_act, card, game_state_manager)
+                self._run_post_actions(effect_data, card, game_state_manager)
 
     def _process_summon_copy(self, effect_data: Effect, target: Any, game_state_manager: 'GameStateManager'):
         """처리 - 복사본 소환"""
@@ -803,14 +837,7 @@ class EffectProcessor:
         print(f"[LOG] 처리 내용: 복사본 소환, 타겟: {owner_id}, 소환 카드: {card.get_display_name()}")
 
         # 후속 조치 효과가 정의되어 있다면 실행합니다.
-        post_actions = getattr(effect_data, "post_action", None)
-        if post_actions:
-            if not isinstance(post_actions, list):
-                post_actions = [post_actions]
-            for post_act in post_actions:
-                handler = self.process_handlers.get(post_act.process)
-                if handler:
-                    handler(post_act, card, game_state_manager)
+        self._run_post_actions(effect_data, card, game_state_manager)
 
     def _process_deal_damage(self, effect_data: Effect, target: Any, game_state_manager: 'GameStateManager'):
         """처리 - 피해 입히기"""
@@ -901,8 +928,12 @@ class EffectProcessor:
             if not isinstance(post_actions, list):
                 post_actions = [post_actions]
             for post_act in post_actions:
-                proc_val = post_act.process if hasattr(post_act, "process") else post_act.get("process")
-                handler = self.process_handlers.get(proc_val)
+                problem = self._process_problem(post_act)
+                if problem:
+                    self._unimplemented(game_state_manager, target, post_act, problem)
+                    continue
+                proc_val = post_act.process
+                handler = self.process_handlers[proc_val]
                 if handler:
                     # target이 손패에 있는 카드인 경우 (패 선택 후속 조치)
                     if getattr(target, "current_zone", None) == Zone.HAND:
@@ -947,6 +978,14 @@ class EffectProcessor:
 
     def _process_evolve(self, effect_data: Effect, target: Card, game_state_manager: 'GameStateManager'):
         """처리 - 지정 카드를 진화시킵니다."""
+        if not isinstance(target, Card) or target.get_type() != CardType.FOLLOWER:
+            print(f"[LOG] 처리 내용: 카드 진화 불가 (추종자가 아님), 타겟 {getattr(target, 'get_display_name', lambda: target)()}")
+            return
+        if target.is_evolved or target.is_super_evolved:
+            # A follower evolves at most once. Re-evolving also re-published the evolved
+            # event, which looped forever on cards whose Evolved effect evolves followers (EI-011).
+            print(f"[LOG] 처리 내용: 카드 진화 불가 (이미 진화됨), 타겟 {target.get_display_name()}")
+            return
         game_state_manager.evolve_card(target.card_id)
         from src.common.event import FollowerEvolvedEvent
         self.event_manager.publish(FollowerEvolvedEvent(target.card_id, spend_ep=False))
@@ -1025,11 +1064,17 @@ class EffectProcessor:
 
     def _process_return_to_deck(self, effect_data: Effect, target: Card, game_state_manager: 'GameStateManager'):
         """처리 - 덱으로 되돌리기"""
+        if not isinstance(target, Card):
+            self._unimplemented(game_state_manager, target, effect_data, "RETURN_TO_DECK target is not a card")
+            return
         game_state_manager.move_card(target.card_id, Zone.HAND, Zone.DECK)
         print(f"[LOG] 처리 내용: 덱으로 되돌리기, 타겟: {target.get_display_name()}")
 
     def _process_return_to_hand(self, effect_data: Effect, target: Card, game_state_manager: 'GameStateManager'):
         """처리 - 패로 되돌리기"""
+        if not isinstance(target, Card):
+            self._unimplemented(game_state_manager, target, effect_data, "RETURN_TO_HAND target is not a card")
+            return
         game_state_manager.move_card(target.card_id, Zone.FIELD, Zone.HAND)
         target.current_cost = target.card_data['cost']
         print(f"[LOG] 처리 내용: 패로 되돌리기, 타겟: {target.get_display_name()}")
@@ -1037,6 +1082,15 @@ class EffectProcessor:
     def _process_trigger_effect(self, effect_data: Effect, target: Any, game_state_manager: 'GameStateManager'):
         """처리 - 다른 효과 발동"""
         value = effect_data.value
+        if isinstance(value, int):
+            # "Activate N random abilities from the following": N draws without replacement.
+            for _ in range(value):
+                self._process_trigger_effect(Effect(process=ProcessType.TRIGGER_EFFECT, value="random_unactivated"),
+                                             target, game_state_manager)
+            return
+        if not isinstance(value, (str, EffectType)):
+            self._unimplemented(game_state_manager, target, effect_data, f"TRIGGER_EFFECT value {value!r}")
+            return
         if value == "random_unactivated":
             spell_effects = []
             for idx, effect in enumerate(target.effects):
@@ -1056,7 +1110,7 @@ class EffectProcessor:
             for effect in target.effects:
                 if effect.type == value:
                     self.resolve_effect(effect, target.card_id, game_state_manager, None)
-            print(f"[LOG] 처리 내용: 다른 효과 발동, 타겟: {target.get_display_name()}, 발동 효과: {value.value}")
+            print(f"[LOG] 처리 내용: 다른 효과 발동, 타겟: {target.get_display_name()}, 발동 효과: {getattr(value, 'value', value)}")
 
     def _process_gain_crest(self, effect_data: Effect, target: Any, game_state_manager: 'GameStateManager'):
         """문장 획득 효과를 처리하고 전역 리스너를 바인딩합니다."""
@@ -1287,12 +1341,13 @@ class EffectProcessor:
                     if not isinstance(post_actions, list):
                         post_actions = [post_actions]
                     for post_act in post_actions:
-                        proc_val = post_act.process if hasattr(post_act, "process") else post_act.get("process")
-                        handler = self.process_handlers.get(proc_val)
-                        if handler:
-                            target = game_state_manager.get_entity_by_id(target_id) if target_id else caster_card
-                            if target:
-                                handler(post_act, target, game_state_manager)
+                        problem = self._process_problem(post_act)
+                        if problem:
+                            self._unimplemented(game_state_manager, caster_card, post_act, problem)
+                            continue
+                        target = game_state_manager.get_entity_by_id(target_id) if target_id else caster_card
+                        if target:
+                            self.process_handlers[post_act.process](post_act, target, game_state_manager)
                 else:
                     # post_action이 없고 raw_action_text가 카드 이름이라면 소환 효과로 대체 처리합니다.
                     raw_text = getattr(process, "raw_action_text", None)
@@ -1309,6 +1364,8 @@ class EffectProcessor:
                             player = game_state_manager.players[player_id]
                             temp_eff = Effect(value=resolved_card)
                             self._process_summon(temp_eff, player, game_state_manager)
+                        elif process_type != ProcessType.DEFINE_VARIABLE:
+                            self._unimplemented(game_state_manager, caster_card, process, "unparsed action text")
                 continue
 
             # ProcessType.CHOOSE (선택 모드) 인 경우 pending_choice 에 전체 이펙트 등록 후 사용자 선택을 대기합니다.
@@ -1320,10 +1377,11 @@ class EffectProcessor:
                 print(f"[LOG] {self._get_owner_id(caster_card)}의 선택 대기. 선택지: {effect_data.get('choices')}")
                 return
 
-            handler = self.process_handlers.get(process_type)
-            if not handler:
-                print(f"[ERROR] 처리 타입 {process_type.value}에 대한 핸들러가 정의되지 않았습니다.")
+            problem = self._process_problem(process)
+            if problem:
+                self._unimplemented(game_state_manager, caster_card, process, problem)
                 continue
+            handler = self.process_handlers[process_type]
 
             print(f"[LOG] {caster_card.get_display_name()} (ID: {caster_id})의 키워드 {effect_type.value if effect_type else 'None'} 중 프로세스 {process_type.name} 처리 시작")
 
@@ -1514,6 +1572,11 @@ class EffectProcessor:
                     print("[WARNING] Own deck has no followers. Cannot transform.")
                     return
 
+        if isinstance(new_card_data, str):
+            new_card_data = card_data.resolve_card_reference(new_card_data) or new_card_data
+        if not isinstance(new_card_data, card_data.CardData):
+            self._unimplemented(game_state_manager, target, effect_data, f"TRANSFORM target card {new_card_data!r} unresolved")
+            return
         new_card = game_state_manager.create_card_instance(new_card_data, owner_id)
         new_card.current_zone = Zone.FIELD
 

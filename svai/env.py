@@ -113,7 +113,7 @@ class SVEnv(gym.Env if gym else object):
     def __init__(self, opponent: Optional[Agent] = "random", agent_player: str = "player1",
                  option_agent: Any = None, config: Optional[Dict[str, Any]] = None,
                  quiet: bool = True, deck_mode: Optional[str] = None, deck_files: Optional[List[str]] = None,
-                 max_turns: Optional[int] = None):
+                 max_turns: Optional[int] = None, exclude_unparsed_cards: Optional[bool] = None):
         self.cfg = config or load_config()
         env_cfg = self.cfg["env"]
         ensure_card_database(env_cfg["card_database"])
@@ -126,6 +126,8 @@ class SVEnv(gym.Env if gym else object):
         self.deck_mode = deck_mode or env_cfg["deck_mode"]
         self.deck_files = deck_files if deck_files is not None else list(env_cfg["deck_files"])
         self.max_turns = max_turns or env_cfg["max_turns"]
+        self.exclude_unparsed_cards = (env_cfg["exclude_unparsed_cards"] if exclude_unparsed_cards is None
+                                       else exclude_unparsed_cards)
         self.opponent_action_cap = env_cfg["opponent_actions_per_turn"]
 
         if spaces is not None:
@@ -154,8 +156,8 @@ class SVEnv(gym.Env if gym else object):
         from deck_builder import generate_random_deck
         classes = [c for c in ClassType if c != ClassType.NEUTRAL]
         cards = all_cards()
-        d1 = generate_random_deck(self.rng.choice(classes), cards, rng=self.rng)
-        d2 = generate_random_deck(self.rng.choice(classes), cards, rng=self.rng)
+        d1 = generate_random_deck(self.rng.choice(classes), cards, rng=self.rng, exclude_unparsed=self.exclude_unparsed_cards)
+        d2 = generate_random_deck(self.rng.choice(classes), cards, rng=self.rng, exclude_unparsed=self.exclude_unparsed_cards)
         return d1, d2
 
     def _build_opponent(self) -> Optional[Agent]:

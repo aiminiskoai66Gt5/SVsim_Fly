@@ -71,8 +71,12 @@ class Process:
 
     def __getattr__(self, name):
         """부모 Effect 객체의 속성을 조회합니다."""
-        if name in ['process', 'target', 'value', 'condition', 'is_split', 'extra_effect', 'processes', 'attributes']:
+        if name in ['processes', 'attributes']:
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+        if name in ['process', 'target', 'value', 'condition', 'is_split', 'extra_effect']:
+            # A process field the parser did not emit reads as None, like on Effect,
+            # instead of raising. It is never looked up on the parent effect (EI-010).
+            return None
         if name != 'parent_effect' and hasattr(self, 'parent_effect') and self.parent_effect:
             parent = self.parent_effect
             if name in parent.__dict__:
@@ -211,4 +215,4 @@ class Effect:
 
     def get(self, key: str, default: Any = None) -> Any:
         """키를 사용하여 효과의 속성 값을 가져옵니다."""
-        return getattr(self, key, default)
+        return getattr(self, key, default)
