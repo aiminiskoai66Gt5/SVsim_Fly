@@ -37,14 +37,23 @@ It imports `generate_random_deck` from `deck_builder.py`, whose module top impor
 
 ## B. Win / loss (decision recorded, not implemented yet)
 
-### EI-007 The engine has no game-over state — OPEN, scheduled for M1
+### EI-007 The engine has no game-over state — FIXED (M1)
 No winner / game-over flag anywhere. `main.py` plays 20 turns and never looks at leader defense;
 only `fuzz_runner.py` stops at defense <= 0. `_draw_card` on an empty deck prints and returns.
-Owner decision (2026-09-18): drawing from an empty deck is a loss. To be implemented in M1.
+Owner decision (2026-09-18): drawing from an empty deck is a loss. Implemented as
+`Game.winner()` / `is_game_over()` (leader defense <= 0 loses, both = draw; first player to draw
+from an empty deck loses). The engine still never refuses actions after game over; callers
+(env, arena) must check. Tests: `test_deck_out_is_a_loss`, `test_leader_defense_zero_...`.
+
+### EI-008 Listener ids embedded `id(effect)` — FIXED (M1)
+`_register_card_listeners` named listeners `f"{card_id}_{type}_{id(effect)}"`. After
+`copy.deepcopy(game)` every effect object has a new address, so a cloned game could never
+unsubscribe those listeners (they would fire for cards that already left the field). Now the
+id uses the effect's index in `card_data.required_listeners`. Test:
+`test_clone_keeps_card_listener_ids_consistent` (fails on the old scheme).
 
 ## C. Seen while reading, not yet reproduced (candidates for M3)
 - `attack_follower`: when the attacker has Barrier, `attacker.effects` is rebuilt from `target.effects`.
 - `attack_follower`: `target.card_data['name']` in the Barrier log line (elsewhere it is an attribute).
 - `Game._on_turn_start` is defined twice; the second definition silently replaces the first.
 - `Game._on_damage_dealt` (Drain) is never subscribed to any event.
-- Listener ids embed `id(effect)`; after `copy.deepcopy(game)` they may no longer match (clone hazard).

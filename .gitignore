@@ -5,3 +5,4 @@ error.log
 .venv/
 venv/
 config.local.toml
+data/

@@ -194,6 +194,19 @@ class Game:
         self.event_manager.subscribe(
             Listener('global_card_discarded', EventType.CARD_DISCARDED, self._on_card_discarded))
 
+    @staticmethod
+    def _listener_id(card: Card, effect: Effect) -> str:
+        """Identifier of the listener registered for ``effect`` of ``card``.
+
+        Uses the effect's position in ``card_data.required_listeners`` rather
+        than ``id(effect)``: memory addresses change under ``copy.deepcopy``,
+        which left cloned games unable to unsubscribe their listeners (EI-008).
+        """
+        for index, (_, candidate) in enumerate(card.card_data.required_listeners):
+            if candidate is effect:
+                return f"{card.card_id}_{effect.type.name}_L{index}"
+        return f"{card.card_id}_{effect.type.name}_{id(effect)}"
+
     def _register_card_listeners(self, card: Card):
         """카드의 능력에 따라 이벤트 리스너를 동적으로 등록합니다."""
         for event_type, effect in card.card_data.required_listeners:
@@ -202,7 +215,7 @@ class Game:
                                EventType.COMBAT_INITIATED, EventType.FOLLOWER_EVOLVED, EventType.CARD_ENGAGED,
                               EventType.DAMAGE_DEALT_BY_COMBAT, EventType.LEAVE_FIELD]:
                 handler = partial(self._handle_card_effect, effect_to_resolve=effect)
-                listener_id = f"{card.card_id}_{effect.type.name}_{id(effect)}"
+                listener_id = self._listener_id(card, effect)
                 condition = lambda event: True
                 if effect.type == EffectType.ENHANCE:
                     # 지연 바인딩 버그를 방지하기 위해 디폴트 매개변수로 현재 이펙트를 고정하여 참조합니다.
@@ -215,7 +228,7 @@ class Game:
 
             elif event_type == EventType.FOLLOWER_SUPER_EVOLVED:
                 handler = self._on_follower_super_evolved
-                listener_id = f"{card.card_id}_{effect.type.name}_{id(effect)}"
+                listener_id = self._listener_id(card, effect)
                 condition = lambda event: True
                 if effect.type in [EffectType.ON_EVOLVE, EffectType.ON_SUPER_EVOLVE]:
                     condition = lambda event: event.spend_sep
@@ -230,7 +243,7 @@ class Game:
             if event_type in [EventType.CARD_PLAYED, EventType.DESTROYED_ON_FIELD, EventType.ATTACK_DECLARED,
                               EventType.COMBAT_INITIATED, EventType.FOLLOWER_EVOLVED, EventType.FOLLOWER_SUPER_EVOLVED,
                                EventType.CARD_ENGAGED, EventType.DAMAGE_DEALT_BY_COMBAT]:
-                listener_id = f"{card.card_id}_{effect.type.name}_{id(effect)}"
+                listener_id = self._listener_id(card, effect)
                 self.event_manager.unsubscribe(event_type, listener_id)
 
     def _handle_card_effect(self, event: Event, effect_to_resolve: Effect):
@@ -240,7 +253,7 @@ class Game:
         print(f"[LOG] 핸들러 처리: 이벤트 '{event.event_type.name}' -> 카드 ID '{card_id}'의 이펙트 '{effect_to_resolve.type.name}'")
         self.effect_processor.resolve_effect(effect_to_resolve, card_id, self.game_state_manager, target_id)
         if event.event_type == EventType.LEAVE_FIELD:
-            listener_id = f"{card_id}_{effect_to_resolve.type.name}_{id(effect_to_resolve)}"
+            listener_id = self._listener_id(self.game_state_manager.get_entity_by_id(card_id), effect_to_resolve)
             self.event_manager.unsubscribe(event.event_type, listener_id)
 
     def _on_follower_super_evolved(self, event: FollowerSuperEvolvedEvent):

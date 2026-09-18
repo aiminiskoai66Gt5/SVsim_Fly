@@ -1,0 +1,25 @@
+# SVsim AI configuration. Every path the AI side writes to comes from here.
+#
+# Relative paths are resolved against the repository root, so the same file
+# works on Windows (E:\SVWB_FLY\data) and under WSL (/mnt/e/SVWB_FLY/data).
+# Absolute paths are allowed. Paths under C:\, %USERPROFILE% or %LOCALAPPDATA%
+# are refused by svai.config (owner constraint: C: is nearly full).
+
+[paths]
+data_root = "data"
+datasets = "data/datasets"
+cache = "data/cache"
+checkpoints = "data/checkpoints"
+logs = "data/logs"
+tmp = "data/tmp"
+
+[display]
+card_name_language = "en"      # "en" | "ko" | "zh_tw"
+zh_tw_names_file = ""          # JSON {english name: zh-TW name}; only used with "zh_tw"
+
+[env]
+max_turns = 40                 # truncation limit per game (turn counter of the engine)
+opponent_actions_per_turn = 30 # safety cap for scripted opponents, as in fuzz_runner
+deck_mode = "random"           # "random": rotation-legal random decks per seed; "files": deck_files
+deck_files = ["decks/리셰나_네메시스.json", "decks/밀티오_나이트메어.json"]
+card_database = "card_database/3_parsed_database/card_database_parsed.json"
