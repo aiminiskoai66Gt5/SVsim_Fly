@@ -12,6 +12,7 @@ from svai import actions as A
 from svai.deciders import AgentDecider, HumanDecider
 from svai.agents.base import Agent
 from svai.interfaces import Decider, NullView, View
+from src.common import text as T
 
 DB_PATH = "card_database/3_parsed_database/card_database_parsed.json"
 
@@ -122,13 +123,13 @@ class TestM0Interfaces(unittest.TestCase):
             A.apply_action(game, "player1", {"type": "DANCE"})
 
     def test_human_decider_end_turn_flow_matches_original_menu(self):
-        dialogs = ScriptedDialogs(["턴 종료", "확인"])
+        dialogs = ScriptedDialogs([T.MENU_END_TURN, T.MENU_OK])
         human = HumanDecider(dialogs)
         game = new_game(view=NullView(), decider=human)
         with contextlib.redirect_stdout(io.StringIO()):
             action = human.choose_action(game, "player1", None)
         self.assertEqual(action, {"type": A.END_TURN})
-        self.assertEqual(dialogs.prompts, ["--- 행동 선택 ---", "player1 턴 종료."])
+        self.assertEqual(dialogs.prompts, [T.MENU_TITLE, T.END_TURN_CONFIRM.format(player_id="player1")])
 
     def test_human_decider_play_card_and_back_navigation(self):
         game = new_game(view=NullView(), decider=RecordingDecider("x"))
@@ -141,12 +142,27 @@ class TestM0Interfaces(unittest.TestCase):
         self.assertTrue(playable)
         label = f"{gsm.get_card_name(playable[0])} (ID - {playable[0]})"
         # open hand -> go back -> open hand again -> pick the card
-        dialogs = ScriptedDialogs(["패에서 카드 내기", "뒤로 가기", "패에서 카드 내기", label])
+        dialogs = ScriptedDialogs([T.MENU_PLAY_CARD, T.MENU_BACK, T.MENU_PLAY_CARD, label])
         with contextlib.redirect_stdout(io.StringIO()):
             action = HumanDecider(dialogs).choose_action(game, "player1", None)
         self.assertEqual(action["type"], A.PLAY_CARD)
         self.assertEqual(action["card_id"], playable[0])
         self.assertFalse(action["use_extra_pp"])
+
+    def test_card_display_language(self):
+        game = new_game(view=NullView(), decider=RecordingDecider("x"))
+        card = game.game_state_manager.players["player1"].hand.get_cards()[0]
+        old = card_data.DISPLAY_LANGUAGE
+        try:
+            card_data.DISPLAY_LANGUAGE = "en"
+            self.assertEqual(card.get_display_name(), card.card_data.name)
+            card_data.DISPLAY_LANGUAGE = "zh_tw"
+            card_data.ZH_TW_NAME_MAP[card.card_data.name] = "測試名"
+            self.assertEqual(card.get_display_name(), "測試名")
+            del card_data.ZH_TW_NAME_MAP[card.card_data.name]
+            self.assertEqual(card.get_display_name(), card.card_data.name)  # falls back to English
+        finally:
+            card_data.DISPLAY_LANGUAGE = old
 
     def test_agent_decider_rejects_illegal_action(self):
         class Liar(Agent):

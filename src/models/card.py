@@ -108,8 +108,12 @@ class Card:
         return self.card_data['card_type']
 
     def get_display_name(self):
-        """한글 번역명을 우선하여 카드 이름을 반환합니다."""
-        name_ko = self.card_data.get('name_ko')
-        if name_ko:
-            return name_ko
-        return self.card_data.get('name')
+        """Return the card name in ``card_data.DISPLAY_LANGUAGE`` (falls back to English)."""
+        from src.common import card_data as cd
+        name_en = self.card_data.get('name')
+        lang = cd.DISPLAY_LANGUAGE
+        if lang == "zh_tw":
+            return cd.ZH_TW_NAME_MAP.get(name_en) or name_en
+        if lang == "ko":
+            return self.card_data.get('name_ko') or name_en
+        return name_en

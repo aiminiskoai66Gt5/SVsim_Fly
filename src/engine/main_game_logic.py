@@ -43,6 +43,7 @@ def validate_fuse_material(material_card: Card, fuse_condition: str) -> bool:
         
     return False
 from svai.interfaces import View, Decider
+from src.common import text as T
 
 # Legacy override hook: set to a class to replace the default tkinter GUI without
 # importing tkinter. Prefer passing ``view=`` / ``decider=`` to Game instead.
@@ -135,11 +136,11 @@ class Game:
         pending_effect = self.game_state_manager.pending_choice
         
         # 선택지 텍스트를 생성합니다.
-        choices = {effect.get('raw_action_text', f"효과 {i+1}"): i 
+        choices = {effect.get('raw_action_text', T.EFFECT_OPTION.format(n=i + 1)): i 
                    for i, effect in enumerate(pending_effect.choices)}
 
         # GUI를 통해 플레이어의 선택을 받습니다.
-        prompt = f"{player_id}, 효과를 선택하세요:"
+        prompt = T.CHOOSE_EFFECT.format(player_id=player_id)
         chosen_index_str = self.decider_for(player_id).choose_option(prompt, choices)
 
         if chosen_index_str is not None and chosen_index_str != '':
@@ -851,16 +852,16 @@ class Game:
         available_actions = []
 
         if card_type == CardType.FOLLOWER and can_attack_follower:
-            available_actions.append("추종자 공격")
+            available_actions.append(T.ACTION_ATTACK)
 
         if card_type == CardType.FOLLOWER and not is_evolved and self.game_state_manager.can_evolve(player_id):
-            available_actions.append("추종자 진화")
+            available_actions.append(T.ACTION_EVOLVE)
 
         if card_type == CardType.FOLLOWER and not is_evolved and self.game_state_manager.can_super_evolve(player_id):
-            available_actions.append("추종자 초진화")
+            available_actions.append(T.ACTION_SUPER_EVOLVE)
 
         if self.game_state_manager.has_keyword(card_id, EffectType.ENGAGE) and self.rule_engine.validate_engage_card(
                 card_id, player_id):
-            available_actions.append("카드 활성화(Engage)")
+            available_actions.append(T.ACTION_ENGAGE)
 
         return available_actions, card_name

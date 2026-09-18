@@ -1,6 +1,7 @@
 # 역할 정의. 카드 효과를 해석하고 처리하는 클래스입니다.
 
 import random
+from src.common import text as T
 import logging
 
 import src.common.card_data as card_data
@@ -326,7 +327,7 @@ class EffectProcessor:
         if not ally_followers: return []
 
         choices = {f"{f.get_display_name()} (ID: {f.card_id})": f.card_id for f in ally_followers}
-        selected_card_id = game_state_manager.game.request_user_choice("아군 추종자를 선택하세요:", choices)
+        selected_card_id = game_state_manager.game.request_user_choice(T.CHOOSE_ALLY_FOLLOWER, choices)
         
         if selected_card_id:
             return [game_state_manager.get_entity_by_id(selected_card_id)]
@@ -340,7 +341,7 @@ class EffectProcessor:
         if not ally_followers: return []
 
         choices = {f"{f.get_display_name()} (ID: {f.card_id})": f.card_id for f in ally_followers}
-        selected_card_id = game_state_manager.game.request_user_choice("아군 추종자를 선택하세요:", choices)
+        selected_card_id = game_state_manager.game.request_user_choice(T.CHOOSE_ALLY_FOLLOWER, choices)
 
         if selected_card_id:
             return [game_state_manager.get_entity_by_id(selected_card_id)]
@@ -354,7 +355,7 @@ class EffectProcessor:
             return []
 
         choices = {f"{c.get_display_name()} (ID {c.card_id})": c.card_id for c in ally_cards}
-        selected_card_id = game_state_manager.game.request_user_choice("아군 카드를 선택하십시오.", choices)
+        selected_card_id = game_state_manager.game.request_user_choice(T.CHOOSE_ALLY_CARD, choices)
 
         if selected_card_id:
             return [game_state_manager.get_entity_by_id(selected_card_id)]
@@ -370,7 +371,7 @@ class EffectProcessor:
             return []
 
         choices = {f"{c.get_display_name()} (ID {c.card_id})": c.card_id for c in valid_cards}
-        selected_card_id = game_state_manager.game.request_user_choice("아군 카드를 선택하십시오.", choices)
+        selected_card_id = game_state_manager.game.request_user_choice(T.CHOOSE_ALLY_CARD, choices)
 
         if selected_card_id:
             return [game_state_manager.get_entity_by_id(selected_card_id)]
@@ -384,7 +385,7 @@ class EffectProcessor:
         if not opponent_followers: return []
 
         choices = {f"{f.get_display_name()} (ID: {f.card_id})": f.card_id for f in opponent_followers}
-        selected_card_id = game_state_manager.game.request_user_choice("상대 추종자를 선택하세요:", choices)
+        selected_card_id = game_state_manager.game.request_user_choice(T.CHOOSE_ENEMY_FOLLOWER, choices)
 
         if selected_card_id:
             return [game_state_manager.get_entity_by_id(selected_card_id)]
@@ -401,7 +402,7 @@ class EffectProcessor:
         for i in range(2):
             choices = {f"{f.get_display_name()} (ID: {f.card_id})": f.card_id for f in opponent_followers if f.card_id not in selected_targets}
             if not choices: break
-            selected_card_id = game_state_manager.game.request_user_choice(f"상대 추종자를 {i+1}번째 선택하세요:", choices)
+            selected_card_id = game_state_manager.game.request_user_choice(T.CHOOSE_ENEMY_FOLLOWER_NTH.format(n=i + 1), choices)
             if selected_card_id:
                 selected_targets.append(selected_card_id)
             else:
@@ -486,7 +487,7 @@ class EffectProcessor:
             choices = {f"{c.get_display_name()} (ID {c.card_id})": c.card_id for c in hand_cards if c.card_id not in selected_targets}
             if not choices:
                 break
-            selected_card_id = game_state_manager.game.request_user_choice(f"패의 카드를 선택하세요 ({i+1}/{count}).", choices)
+            selected_card_id = game_state_manager.game.request_user_choice(T.CHOOSE_HAND_CARD.format(i=i + 1, count=count), choices)
             if selected_card_id:
                 selected_targets.append(selected_card_id)
             else:
@@ -550,7 +551,7 @@ class EffectProcessor:
         if not unevolved_ally_followers: return []
 
         choices = {f"{f.get_display_name()} (ID: {f.card_id})": f.card_id for f in unevolved_ally_followers}
-        selected_card_id = game_state_manager.game.request_user_choice("진화하지 않은 아군 추종자를 선택하세요:", choices)
+        selected_card_id = game_state_manager.game.request_user_choice(T.CHOOSE_UNEVOLVED_ALLY, choices)
 
         if selected_card_id:
             return [game_state_manager.get_entity_by_id(selected_card_id)]

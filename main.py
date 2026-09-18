@@ -6,6 +6,7 @@ from src.engine.main_game_logic import Game
 from src.models.player import Player
 from src.common import card_data
 from svai.actions import apply_action, END_TURN
+from src.common import text as T
 import os
 import json
 import tkinter as tk
@@ -14,7 +15,7 @@ from tkinter import ttk, messagebox
 
 def load_deck_file(filename, deck_dir="decks"):
     """선택한 덱 파일을 로드하여 CardData 객체 목록으로 변환합니다."""
-    if not filename or filename == "기본 예시 덱":
+    if not filename or filename == T.DECK_DEFAULT:
         return None
     filepath = os.path.join(deck_dir, filename)
     with open(filepath, "r", encoding="utf-8") as f:
@@ -38,10 +39,10 @@ def select_decks_gui():
         deck_files = [f for f in os.listdir(deck_dir) if f.endswith(".json")]
 
     # 덱이 아예 없는 경우 콤보박스에 표시할 텍스트입니다.
-    choices = deck_files if deck_files else ["기본 예시 덱"]
+    choices = deck_files if deck_files else [T.DECK_DEFAULT]
 
     root = tk.Tk()
-    root.title("SVsim 덱 선택")
+    root.title(T.DECK_SELECT_TITLE)
     root.geometry("400x250")
     
     # 다크 테마 느낌으로 스타일을 통일합니다.
@@ -54,19 +55,19 @@ def select_decks_gui():
     style = ttk.Style()
     style.theme_use("clam")
     style.configure("TFrame", background=bg_dark)
-    style.configure("TLabel", background=bg_dark, foreground=fg_light, font=("맑은 고딕", 10))
-    style.configure("Header.TLabel", background=bg_dark, foreground=accent_blue, font=("맑은 고딕", 12, "bold"))
+    style.configure("TLabel", background=bg_dark, foreground=fg_light, font=("Microsoft JhengHei", 10))
+    style.configure("Header.TLabel", background=bg_dark, foreground=accent_blue, font=("Microsoft JhengHei", 12, "bold"))
     style.configure("TCombobox", fieldbackground=bg_panel, background=bg_dark, foreground=fg_light)
 
     frame = ttk.Frame(root)
     frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-    ttk.Label(frame, text="플레이어 1 덱 선택", style="Header.TLabel").pack(anchor=tk.W, pady=5)
+    ttk.Label(frame, text=T.DECK_SELECT_P1, style="Header.TLabel").pack(anchor=tk.W, pady=5)
     p1_var = tk.StringVar(value=choices[0])
     p1_combo = ttk.Combobox(frame, textvariable=p1_var, values=choices, state="readonly", width=30)
     p1_combo.pack(fill=tk.X, pady=5)
 
-    ttk.Label(frame, text="플레이어 2 덱 선택", style="Header.TLabel").pack(anchor=tk.W, pady=5)
+    ttk.Label(frame, text=T.DECK_SELECT_P2, style="Header.TLabel").pack(anchor=tk.W, pady=5)
     p2_var = tk.StringVar(value=choices[0])
     p2_combo = ttk.Combobox(frame, textvariable=p2_var, values=choices, state="readonly", width=30)
     p2_combo.pack(fill=tk.X, pady=5)
@@ -76,7 +77,7 @@ def select_decks_gui():
         try:
             return load_deck_file(filename, deck_dir)
         except Exception as e:
-            messagebox.showwarning("덱 로드 실패", f"덱 파일 로드 실패로 기본 덱을 사용합니다. {str(e)}")
+            messagebox.showwarning(T.DECK_LOAD_FAILED_TITLE, T.DECK_LOAD_FAILED.format(error=str(e)))
             return None
 
     result = {"p1": None, "p2": None}
@@ -96,10 +97,10 @@ def select_decks_gui():
     btn_frame = ttk.Frame(frame)
     btn_frame.pack(fill=tk.X, pady=20)
 
-    start_btn = tk.Button(btn_frame, text="게임 시작", command=start_game, bg=accent_blue, fg=bg_dark, font=("맑은 고딕", 10, "bold"), relief=tk.FLAT, padx=10)
+    start_btn = tk.Button(btn_frame, text=T.DECK_START, command=start_game, bg=accent_blue, fg=bg_dark, font=("Microsoft JhengHei", 10, "bold"), relief=tk.FLAT, padx=10)
     start_btn.pack(side=tk.LEFT, padx=5)
 
-    fallback_btn = tk.Button(btn_frame, text="기본 덱으로 시작", command=start_fallback, bg=bg_panel, fg=fg_light, font=("맑은 고딕", 10), relief=tk.FLAT, padx=10)
+    fallback_btn = tk.Button(btn_frame, text=T.DECK_START_DEFAULT, command=start_fallback, bg=bg_panel, fg=fg_light, font=("Microsoft JhengHei", 10), relief=tk.FLAT, padx=10)
     fallback_btn.pack(side=tk.RIGHT, padx=5)
 
     root.mainloop()
@@ -129,4 +130,4 @@ if __name__ == "__main__":
         # 턴 플레이어를 전환합니다.
         current_player = game.opponent_id[current_player]
 
-    game.gui.get_user_choice("--- 게임 종료 예시 ---", {"확인": None})
+    game.gui.get_user_choice(T.GAME_OVER_DEMO, {T.MENU_OK: None})

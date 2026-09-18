@@ -15,6 +15,7 @@ from src.common.enums import Zone, CardType, EffectType, ClassType
 
 
 from svai.interfaces import View, Decider
+from src.common import text as T
 from svai.actions import apply_action
 
 
@@ -162,7 +163,7 @@ def get_all_possible_actions(game: Game, current_player: str) -> List[Dict[str, 
         available_actions, _ = game.get_available_actions(card_id, current_player)
 
         # 2-1 추종자 공격 액션을 검증하고 추가합니다.
-        if "추종자 공격" in available_actions:
+        if T.ACTION_ATTACK in available_actions:
             opponent_targets_id = [opp_card_id for opp_card_id in opponent_field_card_ids if game.game_state_manager.get_type(opp_card_id) == CardType.FOLLOWER] + [opponent_id]
             for target_id in opponent_targets_id:
                 if game.rule_engine.validate_attack(card_id, target_id):
@@ -173,21 +174,21 @@ def get_all_possible_actions(game: Game, current_player: str) -> List[Dict[str, 
                     })
 
         # 2-2 추종자 진화 액션을 추가합니다.
-        if "추종자 진화" in available_actions:
+        if T.ACTION_EVOLVE in available_actions:
             possible_actions.append({
                 "type": "EVOLVE",
                 "card_id": card_id
             })
 
         # 2-3 추종자 초진화 액션을 추가합니다.
-        if "추종자 초진화" in available_actions:
+        if T.ACTION_SUPER_EVOLVE in available_actions:
             possible_actions.append({
                 "type": "SUPER_EVOLVE",
                 "card_id": card_id
             })
 
         # 2-4 카드 활성화 액션을 추가합니다.
-        if "카드 활성화(Engage)" in available_actions:
+        if T.ACTION_ENGAGE in available_actions:
             possible_actions.append({
                 "type": "ENGAGE",
                 "card_id": card_id

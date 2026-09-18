@@ -17,6 +17,7 @@ from tkinter import ttk
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 os.chdir(ROOT)
+from src.common import text as T  # noqa: E402
 
 BIG_WINDOW = "--big" in sys.argv
 stats = {"clicks": 0, "prompts": {}, "tried_play": False}
@@ -30,12 +31,12 @@ def all_widgets(widget):
 
 def pick_button(buttons, prompt):
     labels = {b.cget("text"): b for b in buttons}
-    for fixed in ("기본 덱으로 시작", "멀리건 확인"):
+    for fixed in (T.DECK_START_DEFAULT, T.MULLIGAN_CONFIRM):
         if fixed in labels:
             return labels[fixed]
-    if "턴 종료" in labels and "패에서 카드 내기" in labels:  # main menu
-        return labels["턴 종료"] if stats["tried_play"] else labels["패에서 카드 내기"]
-    return buttons[0]  # first card / "확인" / first effect option
+    if T.MENU_END_TURN in labels and T.MENU_PLAY_CARD in labels:  # main menu
+        return labels[T.MENU_END_TURN] if stats["tried_play"] else labels[T.MENU_PLAY_CARD]
+    return buttons[0]  # first card / OK / first effect option
 
 
 def is_shown(widget):
@@ -73,9 +74,9 @@ def poll(root):
             stats["unmapped_polls"] = 0
             if "(ID" in button.cget("text"):
                 stats["card_clicks"] = stats.get("card_clicks", 0) + 1
-            if button.cget("text") == "패에서 카드 내기":
+            if button.cget("text") == T.MENU_PLAY_CARD:
                 stats["tried_play"] = True
-            elif button.cget("text") == "턴 종료":
+            elif button.cget("text") == T.MENU_END_TURN:
                 stats["tried_play"] = False
             stats["clicks"] += 1
             stats.setdefault("trace", []).append(button.cget("text"))

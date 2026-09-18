@@ -7,6 +7,20 @@ from src.common.effect import Effect, Process
 
 KOR_NAME_MAP = {}
 
+# Card-name display language: "en" (default), "ko" (Korean names from card_database/2_kor_database)
+# or "zh_tw" (Traditional Chinese names from ZH_TW_NAME_MAP, loaded by load_zh_tw_names()).
+DISPLAY_LANGUAGE = "en"
+ZH_TW_NAME_MAP: Dict[str, str] = {}
+
+
+def load_zh_tw_names(path: str) -> int:
+    """Load an English -> Traditional Chinese card-name map (JSON object). Returns entries loaded."""
+    import json
+    with open(path, "r", encoding="utf-8") as f:
+        ZH_TW_NAME_MAP.update(json.load(f))
+    return len(ZH_TW_NAME_MAP)
+
+
 def load_kor_names(kor_db_dir: str = 'card_database/2_kor_database'):
     """한글 카드명 매핑 데이터를 불러옵니다."""
     global KOR_NAME_MAP
